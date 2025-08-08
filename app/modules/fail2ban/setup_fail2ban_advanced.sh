@@ -6,8 +6,7 @@ module_name="setup_fail2ban_advanced"
 module_description="🛡️ setup fail2ban"
 version=1.0.0
 group="hardening"
-menu_name=$module_name
-menu_description=$module_description
+
 setup_fail2ban_advanced() {
     log "INFO" "Setting up advanced Fail2Ban configuration..."
 

@@ -6,8 +6,7 @@ module_name="setup_file_integrity_monitoring"
 module_description="🛡️ apply file integrity"
 version=1.0.0
 group="hardening"
-menu_name=$module_name
-menu_description=$module_description
+
 setup_file_integrity_monitoring() {
     log "INFO" "Setting up advanced file integrity monitoring..."
 

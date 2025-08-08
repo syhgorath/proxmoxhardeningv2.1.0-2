@@ -6,8 +6,7 @@ module_name="setup_advanced_auditing"
 module_description="🛡️ setup advanced auditing"
 version=1.0.0
 group="hardening"
-menu_name=$module_name
-menu_description=$module_description
+
 setup_advanced_auditing() {
     log "INFO" "Setting up advanced system auditing..."
 

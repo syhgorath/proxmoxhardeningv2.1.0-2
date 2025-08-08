@@ -4,8 +4,7 @@ IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 module_name="enhance_ssh_configuration"
 module_description="👤 Manage SSH settings and configurations"
-menu_name="$module_name"
-menu_description="$module_description"
+
 version=1.0.0
 
 enhance_ssh_configuration() {

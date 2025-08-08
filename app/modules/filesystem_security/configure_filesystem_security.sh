@@ -6,8 +6,7 @@ module_name="configure_filesystem_security"
 module_description="🛡️ configure filesystem security"
 version=1.0.0
 group="hardening"
-menu_name=$module_name
-menu_description=$module_description
+
 configure_filesystem_security() {
     log "INFO" "Configuring filesystem security..."
 

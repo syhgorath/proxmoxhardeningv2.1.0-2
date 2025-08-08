@@ -6,8 +6,7 @@ module_name="apply_service_hardening"
 module_description="🛡️ apply service hardening"
 version=1.0.0
 group="hardening"
-menu_name=$module_name
-menu_description=$module_description
+
 apply_service_hardening() {
     log "INFO" "Applying advanced service hardening..."
 

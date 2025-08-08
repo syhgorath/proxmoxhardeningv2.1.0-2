@@ -6,6 +6,7 @@ trap 'echo "Error on line $LINENO" >&2' ERR
     module_description="🛡️ run rkhunter check"
     version=1.0.0
    group="hardening"
+   
 run_rkhunter_check(){
    
   

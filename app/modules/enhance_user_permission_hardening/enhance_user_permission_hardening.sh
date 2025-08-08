@@ -6,8 +6,7 @@ module_name="enhance_user_permission_hardening"
 module_description="🛡️ enhance user permission hardening"
 version=1.0.0
 group="hardening"
-menu_name=$module_name
-menu_description=$module_description
+
 enhance_user_permission_hardening() {
     log "INFO" "Enhancing user and permission hardening..."
     #TODO:CAN BE REMOVED IN FUTURE VERSIONS

@@ -22,9 +22,8 @@ autoload() {
       # Menü bilgilerini kontrol et
       if [[ -n "$menu_name" && -n "$menu_description" ]]; then
         MENU_ITEMS_SOURCE["$menu_name"]="$menu_description"
-        echo "✅ Yüklendi: $item (Menu: $menu_name)"
-      else
-        echo "⚠️ Uyarı: $item dosyasında menu_name veya menu_description tanımlı değil."
+     
+  
       fi
 
     elif [ -d "$item" ]; then

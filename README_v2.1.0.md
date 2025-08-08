@@ -10,7 +10,7 @@
 * Added this README and a VERSION file.
 
 ## Quick Start
-
+git clone https://github.com/syhgorath/proxmoxhardeningv2.1.0-2.git 
 ```bash
 DRY_RUN=1 ./main.sh   # see actions
 sudo ./main.sh        # apply

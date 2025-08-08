@@ -6,6 +6,8 @@ trap 'echo "Error on line $LINENO" >&2' ERR
 declare -A MENU_ITEMS_SOURCE=()
 declare -A HARDEN_ITEMS_SOURCE=()
 source "$(dirname "$0")/definitions.cfg" 1 || exit 1
+source "$(dirname "$0")/app/helpers/check_root.sh" 1 || exit 1
+check_root
 source "$(dirname "$0")/autoload.sh" 1 || exit 1
 
 autoload   "app" || exit 1

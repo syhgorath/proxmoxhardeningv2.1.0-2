@@ -4,6 +4,9 @@ IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 set -euo pipefail
 
+cfg_check() {
+  
+
 CONFIG_FILE="/etc/pve/datacenter.cfg"
 BACKUP_FILE="/etc/pve/datacenter.cfg.bak-$(date +%Y%m%d-%H%M%S)"
 TEMP_FILE="$(mktemp)"
@@ -77,3 +80,4 @@ fi
 if [[ "$ERRORS" -eq 0 ]]; then
   echo "🎉 Tüm satırlar geçerliydi. Dosya zaten temizdi."
 fi
+}

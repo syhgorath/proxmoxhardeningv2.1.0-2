@@ -2,7 +2,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
-
+datacenter_check() {
 # Proxmox datacenter.cfg geçerli anahtar listesi (Proxmox 8.x için)
 VALID_KEYS=(
   "keyboard"
@@ -55,3 +55,4 @@ if [[ "$ERROR_FOUND" -eq 0 ]]; then
 else
   echo -e "\n⚠️ Yukarıdaki satırlar schema tarafından tanınmıyor. Yorum satırı (#) yapman veya silmen önerilir."
 fi
+}

@@ -1,13 +1,13 @@
 #!/bin/bash
-set -euo pipefail
-IFS=$'\n\t'
-trap 'echo "Error on line $LINENO" >&2' ERR
+#set -euo pipefail
+#IFS=$'\n\t'
+#trap 'echo "Error on line $LINENO" >&2' ERR
 
 autoload() {
 
   local path="$1"
 
-  for item in "$path"/*.sh; do
+  for item in "$path"/*; do
     # Sembolik linkleri atla (isteğe bağlı)
     [ -L "$item" ] && continue
 
@@ -22,7 +22,8 @@ autoload() {
       if [[ -n "$menu_name" && -n "$menu_description" ]]; then
         MENU_ITEMS_SOURCE["$menu_name"]="$menu_description"
         echo "✅ Yüklendi: $item (Menu: $menu_name)"
-      
+      else
+        echo "⚠️ Uyarı: $item dosyasında menu_name veya menu_description tanımlı değil."
       fi
 
     elif [ -d "$item" ]; then

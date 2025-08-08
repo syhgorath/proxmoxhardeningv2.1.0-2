@@ -13,8 +13,9 @@ autoload() {
 
     if [ -f "$item" ]; then
       # Geçici değişkenleri temizle
-      unset menu_name menu_description 2>/dev/null
-  
+      local menu_name=""
+      local menu_description=""
+
       # Dosyayı source et (ayrı bir alt kabukta çalıştır)
       source "$item"
 

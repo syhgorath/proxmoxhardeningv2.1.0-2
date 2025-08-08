@@ -2,8 +2,8 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
-#module_name="enhance_ssh_configuration"
-#module_description="👤 Manage SSH settings and configurations"
+module_name="enhance_ssh_configuration"
+module_description="👤 Manage SSH settings and configurations"
 version=1.0.0
 menu_name=$module_name
 menu_description=$module_description

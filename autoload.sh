@@ -7,7 +7,7 @@ autoload() {
 
   local path="$1"
 
-  for item in "$path"/*; do
+  for item in "$path"/*.sh; do
     # Sembolik linkleri atla (isteğe bağlı)
     [ -L "$item" ] && continue
 
@@ -31,4 +31,4 @@ autoload() {
   done
 
 
-}
+  }

@@ -30,5 +30,4 @@ autoload() {
     fi
   done
 
-
-  }
+}

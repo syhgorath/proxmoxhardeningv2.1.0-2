@@ -11,8 +11,8 @@ register_module() {
   MODULE_GROUP["$name"]="$group"
 
   # Aynı modülü aynı gruba iki kez ekleme
-  if [[ " ${GROUP_INDEX["$group"]} " != *" $name "* ]]; then
-    GROUP_INDEX[$group]="${GROUP_INDEX[$group]} $name"
-    GROUP_INDEX[$group]="${GROUP_INDEX[$group]# }"
+  if [[ " ${GROUP_INDEX["$group"]:-} " != *" $name "* ]]; then
+    GROUP_INDEX["$group"]="${GROUP_INDEX["$group"]:-} $name"
+    GROUP_INDEX["$group"]="${GROUP_INDEX["$group"]# }"
   fi
 }

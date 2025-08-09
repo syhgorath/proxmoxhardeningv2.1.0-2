@@ -17,8 +17,6 @@ CheckRoot
 source "$(dirname "$0")/Autoload.sh"
 Autoload   "$(dirname "$0")/App"   # path’i net ver
 
-# 4) Menü
-source "$(dirname "$0")/Menu.sh"
 
 # 5) Döngü
 while true; do

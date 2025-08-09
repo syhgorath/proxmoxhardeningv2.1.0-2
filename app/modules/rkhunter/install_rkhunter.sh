@@ -2,11 +2,13 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
-module_name="install_rkhunter"
+module_name="InstallRkHunter"
 module_description="🛡️ install rkhunter"
 group="hardening"
 version=1.0.0
-install_rkhunter() {
+
+
+InstallRkHunter() {
 
     # Check if rkhunter is already installed
     if command -v rkhunter &>/dev/null; then

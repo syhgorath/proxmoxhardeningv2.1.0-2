@@ -1,9 +1,9 @@
 #!/bin/bash
-#set -euo pipefail
-#IFS=$'\n\t'
-#trap 'echo "Error on line $LINENO" >&2' ERR
+set -euo pipefail
+IFS=$'\n\t'
+trap 'echo "Error on line $LINENO" >&2' ERR
 
-autoload() {
+Autoload() {
 
   local path="$1"
 
@@ -27,7 +27,7 @@ autoload() {
       fi
 
     elif [ -d "$item" ]; then
-      autoload "$item" # Özyineleme
+      Autoload "$item" # Özyineleme
     fi
   done
 

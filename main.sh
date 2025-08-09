@@ -5,12 +5,12 @@ trap 'echo "Error on line $LINENO" >&2' ERR
 #set -u -o pipefail
 declare -A MENU_ITEMS_SOURCE=()
 declare -A HARDEN_ITEMS_SOURCE=()
-source "$(dirname "$0")/definitions.cfg" 1 || exit 1
-source "$(dirname "$0")/app/helpers/check_root.sh" 1 || exit 1
-check_root
-source "$(dirname "$0")/autoload.sh" 1 || exit 1
+source "$(dirname "$0")/Definitions.cfg" 1 || exit 1
+source "$(dirname "$0")/App/Helpers/CheckRoot.sh" 1 || exit 1
+CheckRoot || exit 1
+source "$(dirname "$0")/Autoload.sh" 1 || exit 1
 
-autoload   "app" || exit 1
+Autoload   "App" || exit 1
 while true; do
     echo -e "${GREEN}========= ${SCRIPT_NAME} V ${SCRIPT_VERSION} =========${RESET}"
     echo "Server IP: $IPV4 | Public IP: $PUBLIC_IP"

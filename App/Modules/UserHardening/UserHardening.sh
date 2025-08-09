@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+#set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 group="hardening"
@@ -15,7 +15,7 @@ UserHardening() {
     [ ! -f /var/Log/sudo.Log ] && touch /var/Log/sudo.Log
     chmod 600 /var/Log/sudo.Log
     # Enhanced Login.defs
-    create_backup "/etc/Login.defs"
+    CreateBackup "/etc/Login.defs"
  
     cat >/etc/Login.defs <<'EOF'
 # Enhanced Login Definitions Configuration
@@ -84,7 +84,7 @@ EOF
 
     apt update && apt install libpam-pwquality -y
 
-    create_backup "/etc/pam.d/common-password"
+    CreateBackup "/etc/pam.d/common-password"
     # password [success=1 default=ignore] pam_unix.so try_first_pass use_authtok yescrypt
     # password [success=1 default=ignore] pam_argon2.so argon2id m_cost=65536 t_cost=2 parallel=1
 
@@ -130,7 +130,7 @@ EOF
 
     # Enhanced sudo configuration
     if command -v sudo &>/dev/null; then
-        create_backup "/etc/sudoers"
+        CreateBackup "/etc/sudoers"
         cat >/etc/sudoers.d/99-hardening <<'EOF'
 # Enhanced sudo security configuration
 Defaults    env_reset

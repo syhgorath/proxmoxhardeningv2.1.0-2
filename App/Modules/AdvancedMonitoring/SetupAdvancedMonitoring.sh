@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+#set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 
@@ -15,7 +15,7 @@ SetupAdvancedMonitoring() {
     apt update && apt install rsysLog Logwatch htop iotop nethogs net-tools -y
 
     # Enhanced rsysLog configuration
-    create_backup "/etc/rsysLog.conf"
+    CreateBackup "/etc/rsysLog.conf"
     cat >>/etc/rsysLog.conf <<'EOF'
 
 # Enhanced Logging configuration

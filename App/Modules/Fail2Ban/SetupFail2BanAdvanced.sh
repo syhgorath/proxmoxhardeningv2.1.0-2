@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+#set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 
@@ -12,7 +12,7 @@ SetupFail2BanAdvanced() {
     Log "INFO" "Setting up advanced Fail2Ban configuration..."
 
     # Install Fail2Ban
-    create_backup "/etc/fail2ban/jail.local"
+    CreateBackup "/etc/fail2ban/jail.local"
 
     # Advanced Fail2Ban configuration
     cat >/etc/fail2ban/jail.local <<'EOF'

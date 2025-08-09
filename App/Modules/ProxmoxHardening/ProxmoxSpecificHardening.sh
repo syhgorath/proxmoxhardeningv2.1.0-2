@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+#set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 group="hardening"
@@ -92,7 +92,7 @@ EOF
 
     # Enhanced Proxmox web interface configuration
     if [ -f /etc/default/pveproxy ]; then
-        create_backup "/etc/default/pveproxy"
+        CreateBackup "/etc/default/pveproxy"
     fi
     cat >/etc/default/pveproxy <<'EOF'
 # Proxmox VE proxy server configuration
@@ -106,7 +106,7 @@ SSL_OPTIONS="NO_SSLv3,NO_TLSv1,NO_TLSv1.1"
 EOF
     # SPICE Proxy ayarları
     if [ -f "/etc/default/spiceproxy" ]; then
-        create_backup "/etc/default/spiceproxy"
+        CreateBackup "/etc/default/spiceproxy"
         cat >"/etc/default/spiceproxy" <<'EOF'
 # SPICE Proxy Security Configuration
 SECURE=1

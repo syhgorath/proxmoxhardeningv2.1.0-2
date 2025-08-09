@@ -4,7 +4,7 @@
 
 ## Overview of Changes from v2.0.1
 
-* Added `set -euo pipefail`, safe `IFS`, and error trapping to every shell script.
+* Added `#set -euo pipefail`, safe `IFS`, and error trapping to every shell script.
 * Included default `trap` for better error Logging.
 * Inserted uniform directory structure (kept legacy layout for compatibility).
 * Added this README and a VERSION file.

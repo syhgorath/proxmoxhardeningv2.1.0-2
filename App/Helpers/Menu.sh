@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+#set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 group="Helpers"
@@ -15,7 +15,7 @@ Menu() {
   local group="$1"
   local i=1 key CHOICE
   declare -A INDEX_MAP
-  clear
+  
 
   # set -u ile güvenli kontrol
   if ! [[ -v "GROUP_INDEX[$group]" ]] || [[ -z "${GROUP_INDEX[$group]:-}" ]]; then
@@ -32,30 +32,30 @@ Menu() {
     INDEX_MAP[$i]="$key"
     ((i++))
   done
-  echo " [0] Çıkış"
+  echo " [0] Exit"
   echo
 
-  read -rp "Seçiminiz [0-$((i - 1))]: " CHOICE
+  read -rp "Choice [0-$((i - 1))]: " CHOICE
 
   if [[ "$CHOICE" == "0" ]]; then
-    echo -e "${YELLOW:-}👋 Çıkılıyor...${RESET:-}"
+    echo -e "${YELLOW:-}👋 Exiting...${RESET:-}"
     exit 0
   elif [[ -n "${INDEX_MAP[$CHOICE]:-}" ]]; then
     local SELECTED_FUNC="${INDEX_MAP[$CHOICE]}"
-    echo -e "${YELLOW:-}Çalıştırılıyor: ${MODULE_LABEL[$SELECTED_FUNC]:-$SELECTED_FUNC}${RESET:-}"
+    echo -e "${YELLOW:-}Execute: ${MODULE_LABEL[$SELECTED_FUNC]:-$SELECTED_FUNC}${RESET:-}"
 
     if declare -f "$SELECTED_FUNC" >/dev/null; then
       "$SELECTED_FUNC"
     elif [[ -x "$SELECTED_FUNC" ]]; then
       bash "$SELECTED_FUNC"
     else
-      echo -e "${RED:-}Fonksiyon/script bulunamadı: $SELECTED_FUNC${RESET:-}"
+      echo -e "${RED:-}Function/script not found: $SELECTED_FUNC${RESET:-}"
     fi
   else
-    echo -e "${RED:-}❓ Geçersiz seçim!${RESET:-}"
+    echo -e "${RED:-}❓ invalid transaction!${RESET:-}"
   fi
 
-  echo -e "\nDevam etmek için Enter..."
+  echo -e "\Enter to continue.."
   read -r
   Menu "$group" || exit 1
 }

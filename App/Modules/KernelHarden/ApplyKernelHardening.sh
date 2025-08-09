@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+#set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 group="hardening"
@@ -10,7 +10,7 @@ RegisterModules $module_name $module_description $group
 ApplyKernelHardening() {
     Log "INFO" "Applying advanced kernel hardening parameters..."
 
-    create_backup "/etc/sysctl.conf"
+    CreateBackup "/etc/sysctl.conf"
 
     cat >/etc/sysctl.d/99-proxmox-hardening-v2.conf <<'EOF'
 # Enhanced Proxmox Kernel Hardening ${SCRIPT_VERSION}

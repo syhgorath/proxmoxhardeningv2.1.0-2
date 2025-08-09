@@ -25,11 +25,16 @@ ApplyFullHardening() {
         ((current_step++))
 
         ShowProgress "${HARDENING_STEPS[$step_key]}" "$current_step" "$total_steps"
-          echo -e "${CYAN}Configuring SSH security...${RESET}"
-          echo -e $step_key;
-          echo -e "${YELLOW}Step $current_step/$total_steps: ${HARDENING_STEPS[$step_key]}${RESET}"
-         bash "$step_key"
         
+       
+          echo -e "${RESET}"
+        echo -e "${CYAN}Executing step $current_step/${total_steps}: ${HARDENING_STEPS[$step_key]}...${RESET}"
+        Log "INFO" "Executing step $current_step/${total_steps}: ${HARDENING_STEPS[$step_key]}"
+           ${HARDENING_STEPS[$step_key]} || {
+            echo -e "${RED}❌ Step failed: ${HARDENING_STEPS[$step_key]}${RESET}"
+            Log "ERROR" "Step failed: ${HARDENING_STEPS[$step_key]}"
+            continue
+          }
 
         sleep 1 # Brief pause between steps
     done
@@ -43,16 +48,16 @@ ApplyFullHardening() {
 
     # Final system check
     if systemctl is-active --quiet ssh pvedaemon pveproxy; then
-        log "INFO" "All critical services are running"
+        Log "INFO" "All critical services are running"
     else
-        log "WARN" "Some critical services may not be running properly"
+        Log "WARN" "Some critical services may not be running properly"
     fi
 
     # Reboot recommendation
     if [[ -f "/var/run/reboot-required" ]] || dmesg | grep -q "microcode"; then
         echo -e "\n${YELLOW}⚠️  System reboot recommended to apply all changes${RESET}"
-        if confirm_action "Reboot system now?" 30 "n"; then
-            log "INFO" "System reboot initiated by user"
+        if ConfirmAction "Reboot system now?" 30 "n"; then
+            Log "INFO" "System reboot initiated by user"
             reboot
         fi
     fi

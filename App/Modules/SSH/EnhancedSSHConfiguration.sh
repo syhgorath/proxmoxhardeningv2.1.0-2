@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+#set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 
@@ -11,7 +11,7 @@ RegisterModules $module_name $module_description $group
 EnhancedSSHConfiguration() {
     Log "INFO" "Starting SSH configuration enhancement..."
 
-    create_backup "/etc/ssh/sshd_config"
+    CreateBackup "/etc/ssh/sshd_config"
     # Daha uyumlu bir şekilde güncelleme
     sed -i '/^KexAlgorithms/d' /etc/ssh/sshd_config
     sed -i '/^Ciphers/d' /etc/ssh/sshd_config

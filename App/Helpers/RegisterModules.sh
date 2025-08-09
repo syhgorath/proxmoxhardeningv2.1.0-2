@@ -5,6 +5,7 @@ group="Helpers"
 module_name="RegisterModules"
 module_description="Registers modules with their names, labels, and groups."
 version=1.0.0
+
 RegisterModules() {
   local name="$1" label="$2" group="$3"
   [[ -z "$name" || -z "$label" || -z "$group" ]] && {

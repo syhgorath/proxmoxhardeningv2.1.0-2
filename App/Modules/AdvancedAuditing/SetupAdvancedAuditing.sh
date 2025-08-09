@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+#set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 
@@ -11,8 +11,10 @@ RegisterModules $module_name $module_description $group
 
 SetupAdvancedAuditing() {
     Log "INFO" "Setting up advanced system auditing..."
-
-    create_backup "/etc/audit/auditd.conf"
+    if ! dpkg -l auditd &>/dev/null; then
+        apt update && apt install -y auditd audispd-plugins
+    fi
+    CreateBackup "/etc/audit/auditd.conf"
 
     # Enhanced auditd configuration
     cat >/etc/audit/auditd.conf <<'EOF'

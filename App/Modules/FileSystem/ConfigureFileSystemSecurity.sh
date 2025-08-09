@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+#set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 group="hardening"
@@ -11,7 +11,7 @@ RegisterModules $module_name $module_description $group
 ConfigureFileSystemSecurity() {
     Log "INFO" "Configuring filesystem security..."
 
-    create_backup "/etc/fstab"
+    CreateBackup "/etc/fstab"
 
     # Configure secure mount options for tmpfs
     if ! grep -q "tmpfs.*tmp.*nosuid" /etc/fstab; then
@@ -27,7 +27,7 @@ ConfigureFileSystemSecurity() {
     mount -o remount,nosuid,nodev,noexec /dev/shm 2>/dev/null || true
 
     # Enhanced limits configuration
-    create_backup "/etc/security/limits.conf"
+    CreateBackup "/etc/security/limits.conf"
 
     cat >>/etc/security/limits.conf <<'EOF'
 

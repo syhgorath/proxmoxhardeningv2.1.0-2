@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+#set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 group="hardening"
@@ -16,7 +16,7 @@ SetupFileIntegrity() {
         apt update && apt install aide aide-common -y
     fi
 
-    create_backup "/etc/aide/aide.conf"
+    CreateBackup "/etc/aide/aide.conf"
 
     # Enhanced AIDE configuration
     cat >/etc/aide/aide.conf <<'EOF'

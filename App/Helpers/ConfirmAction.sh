@@ -2,6 +2,11 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+group="Helpers"
+module_name="ConfirmAction"
+module_description="Confirm Action."
+version=1.0.0
+
 ConfirmAction() {
     local message="$1"
     local default="${2:-n}"

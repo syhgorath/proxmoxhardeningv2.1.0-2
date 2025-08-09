@@ -2,6 +2,10 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+group="Helpers"
+module_name="Menu"
+module_description="Displays a menu for selecting and executing functions."
+version=1.0.0
 
 Menu() {
   local group="$1"

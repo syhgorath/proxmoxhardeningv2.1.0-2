@@ -3,10 +3,10 @@ set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 module_name="HardenStatusChange"
-module_description="🛡️ harden status change"
+module_description="🛡️ Toggle SSH hardening status"
+group="Utility"
 version=1.0.0
-menu_name=$module_name
-menu_description=$module_description
+RegisterModules $module_name $module_description $group
 HardenStatusChange() {
 
     HARDEN_FILE="/etc/systemd/system/ssh.service.d/hardening.conf"

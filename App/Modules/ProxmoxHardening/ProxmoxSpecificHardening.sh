@@ -2,10 +2,12 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
-module_name="ApplyProxmoxSpecificHardening"
-module_description="🛡️ Applying Proxmox-specific security hardening..."
-version=1.0.0
 group="hardening"
+module_name="ApplyProxmoxSpecificHardening"
+module_description="🛡️ Apply Proxmox-specific security hardening"
+version=1.0.0
+RegisterModules $module_name $module_description $group
+
 ApplyProxmoxSpecificHardening() {
     Log "INFO" "Applying Proxmox-specific security hardening..."
 

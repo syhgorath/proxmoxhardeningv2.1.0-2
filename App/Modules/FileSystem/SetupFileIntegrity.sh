@@ -2,11 +2,11 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+group="hardening"
 module_name="SetupFileIntegrity"
 module_description="🛡️ apply file integrity"
 version=1.0.0
-group="hardening"
-
+RegisterModules $module_name $module_description $group
 
 SetupFileIntegrity() {
     Log "INFO" "Setting up advanced file integrity monitoring..."

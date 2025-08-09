@@ -2,11 +2,11 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+group="Utility"
 module_name="RunRkHunter"
 module_description="🛡️ run rkhunter check"
 version=1.0.0
-group="hardening"
-
+RegisterModules $module_name $module_description $group
 RunRkHunter() {
 
     # Create a script to run rkhunter checks

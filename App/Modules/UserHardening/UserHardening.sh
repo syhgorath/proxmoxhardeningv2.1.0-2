@@ -2,11 +2,11 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+group="hardening"
 module_name="UserHardening"
 module_description="🛡️ enhance user permission hardening"
 version=1.0.0
-group="hardening"
-
+RegisterModules $module_name $module_description $group
 
 UserHardening() {
     Log "INFO" "Enhancing user and permission hardening..."

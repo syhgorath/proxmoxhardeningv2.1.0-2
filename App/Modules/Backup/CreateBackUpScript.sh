@@ -2,12 +2,12 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+# Function to create comprehensive backup script
+group="hardening"
 module_name="CreateBackUpScript"
 module_description="🛡️ create backup script"
 version=1.0.0
-group="hardening"
-# Function to create comprehensive backup script
-
+RegisterModules $module_name $module_description $group
 CreateBackUpScript() {
     cat >/usr/local/bin/proxmox-config-backup.sh <<'EOF'
 #!/bin/bash

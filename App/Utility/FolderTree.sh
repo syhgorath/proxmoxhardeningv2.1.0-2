@@ -2,10 +2,11 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
-module_name="folder_tree"
-module_description="🛡️ folder tree"
+module_name="FolderTree"
+module_description="Display a tree structure of files and directories with sizes."
+group="Utility"
 version=1.0.0
-
+RegisterModules $module_name $module_description $group
 FolderTree() {
   red='\033[0;31m'
   green='\033[0;32m'

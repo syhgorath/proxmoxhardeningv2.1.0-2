@@ -2,11 +2,11 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+group="Utility"
 module_name="ManageBackups"
 module_description="🛡️ manage backup script"
 version=1.0.0
-menu_name=$module_name
-menu_description=$module_description
+RegisterModules $module_name $module_description $group
 
 ManageBackups() {
     echo -e "${CYAN}════════════════════════════════════════════${RESET}"

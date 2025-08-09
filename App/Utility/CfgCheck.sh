@@ -3,7 +3,11 @@
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 set -euo pipefail
-
+module_name="CfgCheck"
+module_description="🔍 Check Proxmox datacenter.cfg for valid keys"
+group="Utility"
+version=1.0.0
+RegisterModules $module_name $module_description $group
 CfgCheck() {
   
 

@@ -1,7 +1,9 @@
 #!/bin/bash
 module_name="ApplyFullHardening"
 module_description="🛡️ chek system comptability"
-group="hardening"
+group="MainMenu"
+version=1.0.0
+RegisterModules $module_name $module_description $group
 ApplyFullHardening() {
     local total_steps=${#HARDENING_STEPS[@]}
     local current_step=0

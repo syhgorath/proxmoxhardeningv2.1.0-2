@@ -2,6 +2,11 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+group="Helpers"
+module_name="SafeGoUp"
+module_description="🛡️ Safely navigate up the directory tree"
+version=1.0.0
+
 SafeGoUp() {
   local target_dir="$PWD"
   for ((i=0; i<$1; i++)); do

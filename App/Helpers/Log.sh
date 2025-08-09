@@ -2,6 +2,10 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+group="Helpers"
+module_name="Log"
+module_description="Handles logging with different levels."
+version=1.0.0
 
 Log() {
     local level="$1"
@@ -16,7 +20,7 @@ Log() {
     "DEBUG") color="$BLUE" ;;
     *) color="$RESET" ;;
     esac
- 
+
     echo -e "${color}[$timestamp] [$level] $message${RESET}"
     echo "[$timestamp] [$level] $message" >>"$Log_FILE"
     Logger -t "proxmox-hardening-v2" "[$level] $message"

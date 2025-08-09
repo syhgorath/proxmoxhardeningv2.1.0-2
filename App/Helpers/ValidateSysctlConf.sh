@@ -2,6 +2,9 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+module_name="ValidateSysctlConf"
+module_description="Validates sysctl configuration files."
+version=1.0.0
 ValidateSysctlConf() {
     local conf_file="$1"
 

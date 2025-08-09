@@ -2,13 +2,12 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+
+group="hardening"
 module_name="SetupAdvancedMonitoring"
 module_description="🛡️ setup advanced monitor"
 version=1.0.0
-group="hardening"
-menu_name=$module_name
-menu_description=$module_description
-
+RegisterModules $module_name $module_description $group
 SetupAdvancedMonitoring() {
     Log "INFO" "Setting up advanced security monitoring..."
 

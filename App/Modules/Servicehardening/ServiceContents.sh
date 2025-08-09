@@ -2,9 +2,12 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+
+group="hardening"
 module_name="ServiceContents"
 module_description="🛡️ apply service hardening"
 version=1.0.0
+
 ServiceContents() {
   echo "[INFO] Starting systemd service hardening..."
 

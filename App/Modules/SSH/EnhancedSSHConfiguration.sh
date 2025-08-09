@@ -2,12 +2,12 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+
+group="hardening"
 module_name="EnhancedSSHConfiguration"
 module_description="👤 Manage SSH settings and configurations"
-
 version=1.0.0
-
-
+RegisterModules $module_name $module_description $group
 EnhancedSSHConfiguration() {
     Log "INFO" "Starting SSH configuration enhancement..."
 

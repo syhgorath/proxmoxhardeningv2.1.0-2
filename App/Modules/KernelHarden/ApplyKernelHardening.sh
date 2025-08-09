@@ -2,12 +2,11 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+group="hardening"
 module_name="ApplyKernelHardening"
 module_description="🛡️ Applying advanced kernel hardening parameters...."
-group="hardening"
 version=1.0.0
-
-
+RegisterModules $module_name $module_description $group
 ApplyKernelHardening() {
     Log "INFO" "Applying advanced kernel hardening parameters..."
 

@@ -2,10 +2,12 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
-module_name="SetupAutomatedUpdates"
-module_description="🛡️ setup automated updates"
-version=1.0.0
+
 group="hardening"
+module_name="SetupAutomatedUpdates"
+module_description="🛡️ Setup automated security updates for Proxmox"
+version=1.0.0
+RegisterModules $module_name $module_description $group
  #Function to setup automated security updates
 SetupAutomatedUpdates() {
     Log "INFO" "Setting up automated security updates..."

@@ -2,16 +2,16 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+
+group="hardening"
 module_name="SetupFail2BanAdvanced"
 module_description="🛡️ setup fail2ban"
 version=1.0.0
-group="hardening"
-
+RegisterModules $module_name $module_description $group
 SetupFail2BanAdvanced() {
     Log "INFO" "Setting up advanced Fail2Ban configuration..."
 
     # Install Fail2Ban
-
     create_backup "/etc/fail2ban/jail.local"
 
     # Advanced Fail2Ban configuration

@@ -2,6 +2,11 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+group="Helpers"
+module_name="CheckRoot"
+module_description="Checks if the script is run as root and handles dry-run mode."
+version=1.0.0
+
 CheckRoot() {
     if [[ "${DRY_RUN:-}" == "1" || "${DRY_RUN:-}" == "true" ]]; then
         echo -e "${YELLOW}Dry-run mode: skipping root privilege check${RESET}"

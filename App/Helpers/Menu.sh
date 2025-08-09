@@ -23,7 +23,7 @@ Menu() {
     return 1
   fi
 
-  read -ra KEYS <<<"${GROUP_INDEX[$group]}"
+  IFS=' ' read -ra KEYS <<<"${GROUP_INDEX[$group]}"
 
   for key in "${KEYS[@]}"; do
     # Kullanılabilir etiket yoksa anahtarın kendisini göster

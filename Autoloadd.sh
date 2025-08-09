@@ -8,22 +8,21 @@ Autoload() {
   local path="$1"
 
   for item in "$path"/*; do
-    # Sembolik linkleri atla (isteğe bağlı)
+
+    # Skip symbolic links (optional)
     [ -L "$item" ] && continue
 
     if [ -f "$item" ]; then
-      # Geçici değişkenleri temizle
+      # Clear temporary variables
       local menu_name=""
       local menu_description=""
-
-      # Dosyayı source et (ayrı bir alt kabukta çalıştır)
+      # Source the file (run in a separate subshell)
       source "$item"
 
       # Menü bilgilerini kontrol et
       if [[ -n "$menu_name" && -n "$menu_description" ]]; then
         MENU_ITEMS_SOURCE["$menu_name"]="$menu_description"
-     
-  
+
       fi
 
     elif [ -d "$item" ]; then

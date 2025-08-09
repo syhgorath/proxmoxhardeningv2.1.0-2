@@ -2,7 +2,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
-#set -u -o pipefail
+
 declare -A MENU_ITEMS_SOURCE=()
 declare -A HARDEN_ITEMS_SOURCE=()
 source "$(dirname "$0")/Definitions.cfg" 1 || exit 1

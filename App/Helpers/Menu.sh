@@ -7,6 +7,10 @@ module_name="Menu"
 module_description="Displays a menu for selecting and executing functions."
 version=1.0.0
 
+# Ensure required associative arrays exist when this helper is used standalone
+declare -p MODULE_LABEL >/dev/null 2>&1 || declare -gA MODULE_LABEL
+declare -p GROUP_INDEX >/dev/null 2>&1 || declare -gA GROUP_INDEX
+
 Menu() {
   local group="$1"
   local i=1 key CHOICE
@@ -22,7 +26,9 @@ Menu() {
   read -ra KEYS <<<"${GROUP_INDEX[$group]}"
 
   for key in "${KEYS[@]}"; do
-    echo " [$i] ${MODULE_LABEL[$key]}"
+    # Kullanılabilir etiket yoksa anahtarın kendisini göster
+    local label="${MODULE_LABEL[$key]:-$key}"
+    echo " [$i] $label"
     INDEX_MAP[$i]="$key"
     ((i++))
   done
@@ -36,7 +42,7 @@ Menu() {
     exit 0
   elif [[ -n "${INDEX_MAP[$CHOICE]:-}" ]]; then
     local SELECTED_FUNC="${INDEX_MAP[$CHOICE]}"
-    echo -e "${YELLOW:-}Çalıştırılıyor: ${MODULE_LABEL[$SELECTED_FUNC]}${RESET:-}"
+    echo -e "${YELLOW:-}Çalıştırılıyor: ${MODULE_LABEL[$SELECTED_FUNC]:-$SELECTED_FUNC}${RESET:-}"
 
     if declare -f "$SELECTED_FUNC" >/dev/null; then
       "$SELECTED_FUNC"

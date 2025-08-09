@@ -4,7 +4,7 @@ IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 group="Utility"
 module_name="ManageBackups"
-module_description="🛡️ manage backup script"
+module_description="💾 manage backup script"
 version=1.0.0
 RegisterModules $module_name $module_description $group
 

@@ -38,7 +38,7 @@ Menu() {
   read -rp "Seçiminiz [0-$((i - 1))]: " CHOICE
 
   if [[ "$CHOICE" == "0" ]]; then
-    echo -e "${YELLOW:-}Çıkılıyor...${RESET:-}"
+    echo -e "${YELLOW:-}👋 Çıkılıyor...${RESET:-}"
     exit 0
   elif [[ -n "${INDEX_MAP[$CHOICE]:-}" ]]; then
     local SELECTED_FUNC="${INDEX_MAP[$CHOICE]}"
@@ -52,7 +52,7 @@ Menu() {
       echo -e "${RED:-}Fonksiyon/script bulunamadı: $SELECTED_FUNC${RESET:-}"
     fi
   else
-    echo -e "${RED:-}Geçersiz seçim!${RESET:-}"
+    echo -e "${RED:-}❓ Geçersiz seçim!${RESET:-}"
   fi
 
   echo -e "\nDevam etmek için Enter..."

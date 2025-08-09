@@ -2,11 +2,13 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+declare -gA HARDENING_STEP
 # Global diziler (görünür/güncellenebilir)
 declare -gA MODULE_LABEL
 declare -gA MODULE_GROUP
 declare -gA GROUP_INDEX
 # 1) Global kayıt helper
+source "$(dirname "$0")/Definitions.cfg"
 source "$(dirname "$0")/App/Helpers/RegisterModules.sh"
 
 # 2) Root kontrol vs.

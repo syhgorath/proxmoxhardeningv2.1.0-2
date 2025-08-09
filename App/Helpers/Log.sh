@@ -22,6 +22,6 @@ Log() {
     esac
 
     echo -e "${color}[$timestamp] [$level] $message${RESET}"
-    echo "[$timestamp] [$level] $message" >>"$Log_FILE"
-    Logger -t "proxmox-hardening-v2" "[$level] $message"
+    echo "[$timestamp] [$level] $message" >>"$LOG_FILE"
+    logger -t "proxmox-hardening-v2" "[$level] $message"
 }

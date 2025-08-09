@@ -19,18 +19,18 @@ SetupAdvancedAuditing() {
 # Enhanced Auditd Configuration
 local_events = yes
 write_Logs = yes
-Log_file = /var/Log/audit/audit.Log
+LOG_FILE = /var/Log/audit/audit.Log
 Log_group = adm
 Log_format = ENRICHED
 flush = INCREMENTAL_ASYNC
 freq = 50
-max_Log_file = 100
+max_LOG_FILE = 100
 num_Logs = 20
 priority_boost = 4
 disp_qos = lossy
 dispatcher = /sbin/audispd
 name_format = HOSTNAME
-max_Log_file_action = ROTATE
+max_LOG_FILE_action = ROTATE
 space_left = 200
 space_left_action = SYSLog
 verify_email = yes

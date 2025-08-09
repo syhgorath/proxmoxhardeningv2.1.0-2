@@ -2,14 +2,14 @@
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+group="MainMenu"
 module_name="AddSSHUserEnhanced"
 module_description="🛡️ add ssh user enhanced"
+
 version=1.0.0
-menu_name=$module_name
-menu_description=$module_description
-group="MainMenu"
 
 
+register_module $module_name $module_description $group
 AddSSHUserEnhanced() {
 
 
@@ -107,4 +107,3 @@ Host proxmox-$ssh_user
 " 20 70
     Log "INFO" "SSH user $ssh_user created and configured"
 }
-register_module "AddSSHUserEnhanced" "SSH Sertleştirme" "MainMenu"

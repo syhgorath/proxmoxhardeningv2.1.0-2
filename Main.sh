@@ -1,50 +1,29 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+# Global diziler (görünür/güncellenebilir)
+declare -gA MODULE_LABEL
+declare -gA MODULE_GROUP
+declare -gA GROUP_INDEX
+# 1) Global kayıt helper
+source "$(dirname "$0")/App/Helpers/RegisterModules.sh"
 
-declare -A MENU_ITEMS_SOURCE=()
-declare -A HARDEN_ITEMS_SOURCE=()
-source "$(dirname "$0")/Definitions.cfg" 1 || exit 1
-source "$(dirname "$0")/App/Helpers/CheckRoot.sh" 1 || exit 1
-CheckRoot || exit 1
-source "$(dirname "$0")/Autoload.sh" 1 || exit 1
+# 2) Root kontrol vs.
+source "$(dirname "$0")/App/Helpers/CheckRoot.sh"
+CheckRoot
 
-Autoload   "App" || exit 1
+# 3) Autoload
+source "$(dirname "$0")/Autoload.sh"
+Autoload   "$(dirname "$0")/App"   # path’i net ver
+
+# 4) Menü
+source "$(dirname "$0")/Menu.sh"
+
+# 5) Döngü
 while true; do
-    echo -e "${GREEN}========= ${SCRIPT_NAME} V ${SCRIPT_VERSION} =========${RESET}"
-    echo "Server IP: $IPV4 | Public IP: $PUBLIC_IP"
-    echo
-    i=1
-    declare -A INDEX_MAP
-    for key in "${!MENU_ITEMS_SOURCE[@]}"; do
-        echo " [$i] ${MENU_ITEMS_SOURCE[$key]}"
-        INDEX_MAP[$i]="$key"
-        ((i++))
-    done
-    echo " [0] Exit"
-    echo
-    read -rp "Select an option [0-$((i-1))]: " CHOICE
-
-    if [[ "$CHOICE" == "0" ]]; then
-        echo -e "${YELLOW}Exiting...${RESET}"
-        exit 0
-    elif [[ -n "${INDEX_MAP[$CHOICE]}" ]]; then
-        SELECTED_FUNC="${INDEX_MAP[$CHOICE]}"
-        if declare -f "$SELECTED_FUNC" >/dev/null; then
-            echo -e "${YELLOW}Executing: ${MENU_ITEMS_SOURCE[$SELECTED_FUNC]}...${RESET}"
-            "$SELECTED_FUNC"
-        elif [[ -x "$SELECTED_FUNC" ]]; then
-            echo -e "${YELLOW}Running script: $SELECTED_FUNC...${RESET}"
-            bash "$SELECTED_FUNC"
-        else
-            echo -e "${RED}Function or script not found: $SELECTED_FUNC${RESET}"
-        fi
-    else
-        echo -e "${RED}Invalid option! Please select a valid number.${RESET}"
-    fi
-
-    echo -e "\nPress Enter to return to menu..."
-    read -r
-    clear
+  echo -e "${GREEN:-}========= ${SCRIPT_NAME:-HARDEN} V ${SCRIPT_VERSION:-X.Y.Z} =========${RESET:-}"
+  echo "Server IP: ${IPV4:-N/A} | Public IP: ${PUBLIC_IP:-N/A}"
+  echo
+  Menu "MainMenu"   # Grup adını **aynı** kullan
 done

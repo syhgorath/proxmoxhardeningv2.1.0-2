@@ -1,33 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 IFS=$'\n\t'
-trap 'echo "Error on line $LINENO" >&2' ERR
+
+# register_module fonksiyonu burada hazır olmalı
+# source "$(dirname "$0")/App/Helpers/RegisterModules.sh"  <-- üstten çağırdığın yerde zaten sourced ise burada gerekmez.
 
 Autoload() {
-
   local path="$1"
-
+  shopt -s nullglob
   for item in "$path"/*; do
-
-    # Skip symbolic links (optional)
     [ -L "$item" ] && continue
-
     if [ -f "$item" ]; then
-      # Clear temporary variables
-      local menu_name=""
-      local menu_description=""
-      # Source the file (run in a separate subshell)
-      source "$item"
-
-      # Menü bilgilerini kontrol et
-      if [[ -n "$menu_name" && -n "$menu_description" ]]; then
-        MENU_ITEMS_SOURCE["$menu_name"]="$menu_description"
-
-      fi
-
+      source "$item"   # dosya içinde register_module(...) çağrılır
     elif [ -d "$item" ]; then
-      Autoload "$item" # Özyineleme
+      Autoload "$item"
     fi
   done
-
 }

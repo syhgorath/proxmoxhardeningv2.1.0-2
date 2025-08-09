@@ -7,6 +7,8 @@ module_description="🛡️ add ssh user enhanced"
 version=1.0.0
 menu_name=$module_name
 menu_description=$module_description
+group="MainMenu"
+
 
 AddSSHUserEnhanced() {
 
@@ -105,3 +107,4 @@ Host proxmox-$ssh_user
 " 20 70
     Log "INFO" "SSH user $ssh_user created and configured"
 }
+register_module "AddSSHUserEnhanced" "SSH Sertleştirme" "MainMenu"

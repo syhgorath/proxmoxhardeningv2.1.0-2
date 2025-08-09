@@ -8,10 +8,8 @@ module_description="🛡️ add ssh user enhanced"
 
 version=1.0.0
 
-
 register_module $module_name $module_description $group
 AddSSHUserEnhanced() {
-
 
     if ! confirm_action "Create a new SSH system user?" "n"; then
         return 0
@@ -90,7 +88,7 @@ AddSSHUserEnhanced() {
 
     # Display connection information
     # Bağlantı bilgisi
-  
+
     whiptail --title "User Created" --msgbox "✅  $ssh_user created successfully!
 
 ➡ Host: $IPV4

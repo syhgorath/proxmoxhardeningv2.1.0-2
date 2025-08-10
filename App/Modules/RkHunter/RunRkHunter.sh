@@ -13,7 +13,7 @@ RunRkHunter() {
     cat >/usr/local/bin/check_rkhunter.sh <<'EOF'
 
 # === CONFIGURATION ===
-readonly Log_DIR="/var/Log/rkhunter"
+readonly Log_DIR="/var/log/rkhunter"
 readonly LOG_FILE="${Log_DIR}/rkhunter_$(date +%Y%m%d_%H%M%S).Log"
 readonly CLEAN_MARKER="${Log_DIR}/.last_clean"
 readonly EMAIL_REPORT="root@localhost"  # Mail atmak istersen

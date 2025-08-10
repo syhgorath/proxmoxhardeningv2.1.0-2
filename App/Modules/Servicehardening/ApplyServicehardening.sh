@@ -38,8 +38,8 @@ ApplyServicehardening() {
     # Create custom AppArmor profile for Proxmox services
     cat >/etc/apparmor.d/local/pveproxy <<'EOF'
 # Local customizations for pveproxy
-/var/Log/pveproxy/ rw,
-/var/Log/pveproxy/** rw,
+/var/log/pveproxy/ rw,
+/var/log/pveproxy/** rw,
 /etc/pve/ r,
 /etc/pve/** r,
 EOF

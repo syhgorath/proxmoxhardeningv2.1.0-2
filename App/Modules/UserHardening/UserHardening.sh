@@ -11,9 +11,9 @@ RegisterModules $module_name $module_description $group
 UserHardening() {
     Log "INFO" "Enhancing user and permission hardening..."
     #TODO:CAN BE REMOVED IN FUTURE VERSIONS
-    [ ! -d /var/Log/sudo-io ] && mkdir -p /var/Log/sudo-io
-    [ ! -f /var/Log/sudo.Log ] && touch /var/Log/sudo.Log
-    chmod 600 /var/Log/sudo.Log
+    [ ! -d /var/log/sudo-io ] && mkdir -p /var/log/sudo-io
+    [ ! -f /var/log/sudo.Log ] && touch /var/log/sudo.Log
+    chmod 600 /var/log/sudo.Log
     # Enhanced Login.defs
     CreateBackup "/etc/Login.defs"
  
@@ -139,8 +139,8 @@ Defaults    mail_badpass
 Defaults    secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 Defaults    use_pty
 Defaults    Log_input, Log_output
-Defaults    Logfile="/var/Log/sudo.Log"
-Defaults    ioLog_dir="/var/Log/sudo-io"
+Defaults    Logfile="/var/log/sudo.Log"
+Defaults    ioLog_dir="/var/log/sudo-io"
 Defaults    timestamp_timeout=15
 Defaults    passwd_tries=3
 Defaults    passwd_timeout=5

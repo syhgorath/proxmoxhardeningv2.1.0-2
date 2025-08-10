@@ -115,7 +115,7 @@ EOF
     fi
     # Configure Logrotate for Proxmox Logs
     cat >/etc/Logrotate.d/proxmox-security <<'EOF'
-/var/Log/pveproxy/access.Log {
+/var/log/pveproxy/access.Log {
     weekly
     rotate 52
     compress
@@ -128,7 +128,7 @@ EOF
     endscript
 }
 
-/var/Log/pvedaemon.Log {
+/var/log/pvedaemon.Log {
     weekly
     rotate 52
     compress
@@ -138,7 +138,7 @@ EOF
     create 0640 root adm
 }
 
-/var/Log/pve-firewall.Log {
+/var/log/pve-firewall.Log {
     weekly
     rotate 26
     compress

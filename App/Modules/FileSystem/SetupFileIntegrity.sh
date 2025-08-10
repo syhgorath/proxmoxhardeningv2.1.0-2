@@ -26,7 +26,7 @@ database_out=file:/var/lib/aide/aide.db.new
 database_new=file:/var/lib/aide/aide.db.new
 gzip_dbout=yes
 
-report_url=file:/var/Log/aide/aide.Log
+report_url=file:/var/log/aide/aide.Log
 report_url=stdout
 summarize_changes=yes
 
@@ -85,7 +85,7 @@ Databases = p+i+n+u+g+s+b+m+c+md5+sha1+sha256
 /dev Devices
 
 # Temporary and variable files (selective monitoring)
-!/var/Log/.*
+!/var/log/.*
 !/var/cache/.*
 !/var/tmp/.*
 !/tmp/.*
@@ -114,12 +114,12 @@ EOF
 #!/bin/bash
 # Enhanced AIDE Check Script
 
-AIDE_Log="/var/Log/aide/aide.Log"
-AIDE_REPORT="/var/Log/aide/aide-report-$(date +%Y%m%d-%H%M%S).Log"
+AIDE_Log="/var/log/aide/aide.Log"
+AIDE_REPORT="/var/log/aide/aide-report-$(date +%Y%m%d-%H%M%S).Log"
 EMAIL_ALERT=""  # Set email for alerts
 
 # Create Log directory
-mkdir -p /var/Log/aide
+mkdir -p /var/log/aide
 
 echo "$(date '+%Y-%m-%d %H:%M:%S') - Starting AIDE file integrity check" | tee -a "$AIDE_Log"
 
@@ -166,7 +166,7 @@ if [[ -n "$EMAIL_ALERT" && $AIDE_STATUS -ne 0 ]]; then
 fi
 
 # Cleanup old reports (keep last 30 days)
-find /var/Log/aide/ -name "aide-report-*.Log" -mtime +30 -delete
+find /var/log/aide/ -name "aide-report-*.Log" -mtime +30 -delete
 
 exit $AIDE_STATUS
 EOF
@@ -181,7 +181,7 @@ EOF
 
     # Configure Logrotate for AIDE
     cat >/etc/Logrotate.d/aide <<'EOF'
-/var/Log/aide/aide.Log {
+/var/log/aide/aide.Log {
     monthly
     rotate 12
     compress
@@ -191,7 +191,7 @@ EOF
     create 0640 root adm
 }
 
-/var/Log/aide/aide-report-*.Log {
+/var/log/aide/aide-report-*.Log {
     weekly
     rotate 4
     compress

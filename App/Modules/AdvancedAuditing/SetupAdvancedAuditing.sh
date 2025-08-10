@@ -21,7 +21,7 @@ SetupAdvancedAuditing() {
 # Enhanced Auditd Configuration
 local_events = yes
 write_Logs = yes
-LOG_FILE = /var/Log/audit/audit.Log
+LOG_FILE = /var/log/audit/audit.Log
 Log_group = adm
 Log_format = ENRICHED
 flush = INCREMENTAL_ASYNC

@@ -14,7 +14,7 @@ AutoServiceHardening() {
 
     local report="/etc/proxmox-hardening/unit-hardening-$(date +%F-%H%M%S).csv"
     mkdir -p "$(dirname "$report")"
-    echo "UNIT,RESULT,PROFILE" > "$report"
+    echo "UNIT,RESULT,PROFILE" >"$report"
 
     local PROFILE_STRICT PROFILE_MEDIUM PROFILE_LIGHT
     read -r -d '' PROFILE_STRICT <<'EOF'
@@ -61,22 +61,22 @@ EOF
     ALLOW["postfix@-.service"]=$'[Service]\nReadWritePaths=/var/spool/postfix /var/lib/postfix /etc/postfix /var/log\n'
 
     local CRITICAL_UNITS=(
-      pveproxy.service pvedaemon.service pve-cluster.service pve-ha-crm.service
-      pve-ha-lrm.service pvestatd.service pvescheduler.service pvefw-logger.service
-      pve-firewall.service proxmox-firewall.service pve-lxc-syscalld.service
-      qmeventd.service corosync.service spiceproxy.service
+        pveproxy.service pvedaemon.service pve-cluster.service pve-ha-crm.service
+        pve-ha-lrm.service pvestatd.service pvescheduler.service pvefw-logger.service
+        pve-firewall.service proxmox-firewall.service pve-lxc-syscalld.service
+        qmeventd.service corosync.service spiceproxy.service
     )
 
     local DONT_TOUCH=(
-      emergency.service rescue.service systemd-ask-password-console.service
-      systemd-ask-password-wall.service systemd-bsod.service
+        emergency.service rescue.service systemd-ask-password-console.service
+        systemd-ask-password-wall.service systemd-bsod.service
     )
 
     write_dropin() {
         local u="$1" c="$2" n="$3"
         local dir="/etc/systemd/system/${u}.d"
         mkdir -p "$dir"
-        printf '%s\n' "$c" > "${dir}/${n}"
+        printf '%s\n' "$c" >"${dir}/${n}"
     }
 
     remove_dropin() {
@@ -133,34 +133,33 @@ EOF
         canstart=$(systemctl show -p CanStart --value "$unit" 2>/dev/null || true)
 
         if [[ "$load" != "loaded" ]]; then
-            echo "$unit,SKIPPED,NOT_LOADED" >> "$report"
+            echo "$unit,SKIPPED,NOT_LOADED" >>"$report"
             continue
         fi
         if [[ "$active" != "active" && "$ufs" != "enabled" && "$canstart" == "no" ]]; then
-            echo "$unit,SKIPPED,PASSIVE" >> "$report"
+            echo "$unit,SKIPPED,PASSIVE" >>"$report"
             continue
         fi
 
         allow="${ALLOW[$unit]:-}"
 
         if result=$(try_profile "$unit" "$PROFILE_STRICT" "$allow" "${CRITICAL_UNITS[@]}"); then
-            echo "$unit,$result,STRICT" >> "$report"
+            echo "$unit,$result,STRICT" >>"$report"
             continue
         fi
         if result=$(try_profile "$unit" "$PROFILE_MEDIUM" "$allow" "${CRITICAL_UNITS[@]}"); then
-            echo "$unit,$result,MEDIUM" >> "$report"
+            echo "$unit,$result,MEDIUM" >>"$report"
             continue
         fi
         if result=$(try_profile "$unit" "$PROFILE_LIGHT" "$allow" "${CRITICAL_UNITS[@]}"); then
-            echo "$unit,$result,LIGHT" >> "$report"
+            echo "$unit,$result,LIGHT" >>"$report"
             continue
         fi
 
         remove_dropin "$unit" "hardening.autotest.conf"
         systemctl daemon-reload
-        echo "$unit,FAIL,NO_PROFILE" >> "$report"
+        echo "$unit,FAIL,NO_PROFILE" >>"$report"
     done
 
     Log "INFO" "Service hardening report: $report"
 }
-

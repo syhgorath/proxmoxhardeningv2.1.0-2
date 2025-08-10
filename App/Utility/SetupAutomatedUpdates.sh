@@ -12,9 +12,8 @@ RegisterModules $module_name $module_description $group
 SetupAutomatedUpdates() {
     Log "INFO" "Setting up automated security updates..."
 
-    if ! dpkg -l unattended-upgrades &>/dev/null; then
-        apt update && apt install unattended-upgrades -y
-    fi
+    # Ensure required update utilities are installed
+    apt update && apt install -y unattended-upgrades apt-listbugs needrestart debsums apt-show-versions
 
     cat >/etc/apt/apt.conf.d/50unattended-upgrades <<'EOF'
 // Enhanced Unattended Upgrades Configuration

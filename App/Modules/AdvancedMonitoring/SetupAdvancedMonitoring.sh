@@ -12,13 +12,13 @@ SetupAdvancedMonitoring() {
     Log "INFO" "Setting up advanced security monitoring..."
 
     # Install monitoring tools
-    apt update && apt install rsysLog Logwatch htop iotop nethogs net-tools -y
+    apt update && apt install -y rsyslog logwatch htop iotop nethogs net-tools lynis
 
-    # Enhanced rsysLog configuration
-    CreateBackup "/etc/rsysLog.conf"
-    cat >>/etc/rsysLog.conf <<'EOF'
+    # Enhanced rsyslog configuration
+    CreateBackup "/etc/rsyslog.conf"
+    cat >>/etc/rsyslog.conf <<'EOF'
 
-# Enhanced Logging configuration
+# Enhanced logging configuration
 $ModLoad imudp
 $UDPServerRun 514
 $UDPServerAddress 127.0.0.1
@@ -27,20 +27,20 @@ $UDPServerAddress 127.0.0.1
 $template PreciseFormat,"%timegenerated:::date-year%-%timegenerated:::date-month%-%timegenerated:::date-day% %timegenerated:::date-hour%:%timegenerated:::date-minute%:%timegenerated:::date-second%.%timegenerated:::date-subseconds% %hostname% %sysLogtag%%msg%\n"
 $ActionFileDefaultTemplate PreciseFormat
 
-# Security event Logging
-local0.*                        /var/Log/security-events.Log
-auth,authpriv.*                 /var/Log/auth.Log
-*.*;auth,authpriv.none          /var/Log/sysLog
-daemon.*                        /var/Log/daemon.Log
-kern.*                          /var/Log/kern.Log
-lpr.*                          /var/Log/lpr.Log
-mail.*                         /var/Log/mail.Log
-user.*                         /var/Log/user.Log
+# Security event logging
+local0.*                        /var/log/security-events.log
+auth,authpriv.*                 /var/log/auth.log
+*.*;auth,authpriv.none          /var/log/syslog
+daemon.*                        /var/log/daemon.log
+kern.*                          /var/log/kern.log
+lpr.*                           /var/log/lpr.log
+mail.*                          /var/log/mail.log
+user.*                          /var/log/user.log
 
-# Proxmox specific Logging
-if $programname startswith 'pve' then /var/Log/pve.Log
-if $programname startswith 'qm' then /var/Log/pve-qemu.Log
-if $programname startswith 'pct' then /var/Log/pve-lxc.Log
+# Proxmox specific logging
+if $programname startswith 'pve' then /var/log/pve.log
+if $programname startswith 'qm' then /var/log/pve-qemu.log
+if $programname startswith 'pct' then /var/log/pve-lxc.log
 
 # Emergency messages to all users
 *.emerg                         :omusrmsg:*
@@ -49,7 +49,7 @@ if $programname startswith 'pct' then /var/Log/pve-lxc.Log
 & stop
 EOF
 
-    systemctl restart rsysLog
+    systemctl restart rsyslog
 
     # Setup cron jobs for monitoring
     (
@@ -59,13 +59,13 @@ EOF
 0 * * * * /usr/local/bin/security-monitor.sh
 */15 * * * * /usr/local/bin/system-health-monitor.sh
 # Weekly security report
-0 2 * * 1 /usr/local/bin/proxmox-security-check.sh > /var/Log/weekly-security-report.Log
+0 2 * * 1 /usr/local/bin/proxmox-security-check.sh > /var/log/weekly-security-report.log
 EOF
     ) | crontab -
 
-    # Configure Logrotate for monitoring Logs
-    cat >/etc/Logrotate.d/security-monitoring <<'EOF'
-/var/Log/security-monitor.Log {
+    # Configure logrotate for monitoring logs
+    cat >/etc/logrotate.d/security-monitoring <<'EOF'
+/var/log/security-monitor.log {
     weekly
     rotate 12
     compress
@@ -75,7 +75,7 @@ EOF
     create 0640 root adm
 }
 
-/var/Log/system-health.Log {
+/var/log/system-health.log {
     weekly
     rotate 8
     compress
@@ -85,7 +85,7 @@ EOF
     create 0640 root adm
 }
 
-/var/Log/security-events.Log {
+/var/log/security-events.log {
     weekly
     rotate 26
     compress
@@ -95,7 +95,7 @@ EOF
     create 0640 root adm
 }
 
-/var/Log/weekly-security-report.Log {
+/var/log/weekly-security-report.log {
     monthly
     rotate 12
     compress

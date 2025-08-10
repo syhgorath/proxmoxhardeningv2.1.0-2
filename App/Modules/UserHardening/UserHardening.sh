@@ -80,9 +80,9 @@ EOF
    grep -q "^ENCRYPT_METHOD" /etc/Login.defs &&
         sed -i 's/^ENCRYPT_METHOD.*/ENCRYPT_METHOD yescrypt/' /etc/Login.defs ||
         echo "ENCRYPT_METHOD yescrypt" >>/etc/Login.defs
-    # Install and configure libpam-pwquality
+    # Install and configure libpam modules
 
-    apt update && apt install libpam-pwquality -y
+    apt update && apt install -y libpam-pwquality libpam-tmpdir
 
     CreateBackup "/etc/pam.d/common-password"
     # password [success=1 default=ignore] pam_unix.so try_first_pass use_authtok yescrypt
@@ -112,6 +112,7 @@ EOF
 
     # Enhanced umask settings
     grep -q "pam_umask.so" /etc/pam.d/common-session || echo "session optional pam_umask.so umask=027" >>/etc/pam.d/common-session
+    grep -q "pam_tmpdir.so" /etc/pam.d/common-session || echo "session optional pam_tmpdir.so" >>/etc/pam.d/common-session
 
     # Secure cron and at
     rm -f /etc/cron.deny /etc/at.deny

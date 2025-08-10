@@ -11,7 +11,9 @@ RegisterModules $module_name $module_description $group
 SetupFail2BanAdvanced() {
     Log "INFO" "Setting up advanced Fail2Ban configuration..."
 
-    # Install Fail2Ban
+    # Ensure Fail2Ban and required dependencies are installed
+    apt update && apt install -y fail2ban iptables-persistent
+
     CreateBackup "/etc/fail2ban/jail.local"
 
     # Advanced Fail2Ban configuration

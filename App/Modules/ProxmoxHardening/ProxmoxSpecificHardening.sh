@@ -53,7 +53,7 @@ policy_out: ACCEPT
 10.8.0.2
 10.1.10.11
 [RULES]
-GROUP secure_management -i vmbr0
+GROUP secure_management
 IN ACCEPT -i lo
 IN ACCEPT -p icmp
 IN ACCEPT -p tcp -dport 22 -source +trusted_hosts

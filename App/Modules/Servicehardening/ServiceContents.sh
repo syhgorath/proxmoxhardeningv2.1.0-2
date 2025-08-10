@@ -12,36 +12,47 @@ ServiceContents() {
   echo "[INFO] Starting systemd service hardening..."
 
   SERVICES=(
-    "rsysLog.service"
+    "rsyslog.service"
     "postfix@-.service"
-    "rc-local.service"
-    "rescue.service"
-    "console-getty.service"
-    "getty@tty1.service"
-    "systemd-ask-password-console.service"
-    "systemd-ask-password-wall.service"
-    "lxcfs.service"
-    "corosync.service"
+    "systemd-journald.service"
+    "systemd-udevd.service"
+    "systemd-logind.service"
     "cron.service"
-    "dbus.service"
-    "dm-event.service"
-    "emergency.service"
     "fail2ban.service"
-    "frr.service"
+    "getty@tty1.service"
+    "lxcfs.service"
+    "dbus.service"
+    # PVE çekirdekleri (hafif ya da pas geçilecek)
+    "pveproxy.service"
+    "pvedaemon.service"
+    "pve-cluster.service"
+    "pve-ha-crm.service"
+    "pve-ha-lrm.service"
+    "corosync.service"
   )
 
   declare -A HARDENING_CONTENTS
 
-  HARDENING_CONTENTS["rsysLog.service"]='[Service]
-NoNewPrivileges=true
-PrivateTmp=true
+  HARDENING_CONTENTS["rsyslog.service"]='[Service]
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/log
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+SystemCallFilter=@system-service
+LockPersonality=yes
+'
+  HARDENING_CONTENTS["systemd-udevd.service"]='[Service]
+NoNewPrivileges=yes
 ProtectSystem=full
 ProtectHome=yes
-ReadWritePaths=/var/Log
-RestrictSUIDSGID=true
-SystemCallFilter=@system-service
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+PrivateTmp=yes
+LockPersonality=yes
 '
-
   HARDENING_CONTENTS["postfix@-.service"]='[Service]
 NoNewPrivileges=true
 ProtectSystem=full
@@ -50,7 +61,15 @@ PrivateTmp=true
 RestrictSUIDSGID=true
 SystemCallFilter=@system-service
 '
-
+  HARDENING_CONTENTS["systemd-logind.service"]='[Service]
+NoNewPrivileges=yes
+ProtectSystem=full
+ProtectHome=yes
+PrivateTmp=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+'
   HARDENING_CONTENTS["rc-local.service"]='[Service]
 NoNewPrivileges=true
 ProtectSystem=strict
@@ -83,24 +102,10 @@ LockPersonality=true
 RemoveIPC=yes
 '
 
-  HARDENING_CONTENTS["getty@tty1.service"]='[Service]
+   HARDENING_CONTENTS["getty@tty1.service"]='[Service]
 NoNewPrivileges=yes
-PrivateTmp=true
 ProtectSystem=full
 ProtectHome=yes
-ProtectKernelModules=yes
-ProtectControlGroups=yes
-ProtectClock=yes
-ProtectHostname=yes
-ProtectKernelLogs=yes
-ProtectKernelTunables=yes
-RestrictSUIDSGID=yes
-RestrictRealtime=yes
-RestrictNamespaces=yes
-SystemCallArchitectures=native
-SystemCallFilter=@system-service
-LockPersonality=yes
-MemoryDenyWriteExecute=yes
 '
 
   HARDENING_CONTENTS["systemd-ask-password-console.service"]='[Service]
@@ -117,30 +122,11 @@ ProtectSystem=full
 ProtectHome=yes
 '
 
-  HARDENING_CONTENTS["lxcfs.service"]='[Service]
-# Security hardening
-NoNewPrivileges=true
-PrivateTmp=true
+   HARDENING_CONTENTS["lxcfs.service"]='[Service]
+NoNewPrivileges=yes
 ProtectSystem=full
 ProtectHome=yes
-ReadWritePaths=/var/lib/lxcfs /tmp
-ProtectKernelLogs=true
-
-ProtectProc=invisible
-SystemCallArchitectures=native
-SystemCallErrorNumber=EPERM
-
-LockPersonality=true
-MemoryDenyWriteExecute=true
-RestrictSUIDSGID=true
-RemoveIPC=true
-ProtectKernelTunables=true
-ProtectKernelModules=true
-ProtectControlGroups=true
-RestrictNamespaces=no
-SystemCallFilter=~@reboot @debug @obsolete @cpu-emulation @raw-io
-
-
+PrivateTmp=yes
 '
   HARDENING_CONTENTS["ssh.service"]='[Service]
 # Security hardening
@@ -171,43 +157,14 @@ ExecStartPre=/bin/mkdir -p /run/sshd
 ExecStartPre=/bin/chown root:root /run/sshd
 ExecStartPre=/bin/chmod 0755 /run/sshd
 '
-  HARDENING_CONTENTS["corosync.service"]='[Service]
+
+ HARDENING_CONTENTS["cron.service"]='[Service]
 NoNewPrivileges=yes
-PrivateTmp=true
 ProtectSystem=full
 ProtectHome=yes
-ProtectKernelModules=yes
-ProtectControlGroups=yes
-ProtectClock=yes
-ProtectHostname=yes
-ProtectKernelLogs=yes
-ProtectKernelTunables=yes
+PrivateTmp=yes
 RestrictSUIDSGID=yes
-RestrictRealtime=yes
-RestrictNamespaces=no
-SystemCallArchitectures=native
-SystemCallFilter=@system-service
 LockPersonality=yes
-MemoryDenyWriteExecute=yes
-'
-  HARDENING_CONTENTS["cron.service"]='[Service]
-NoNewPrivileges=yes
-PrivateTmp=true
-ProtectSystem=full
-ProtectHome=yes
-ProtectKernelModules=yes
-ProtectControlGroups=yes
-ProtectClock=yes
-ProtectHostname=yes
-ProtectKernelLogs=yes
-ProtectKernelTunables=yes
-RestrictSUIDSGID=yes
-RestrictRealtime=yes
-RestrictNamespaces=yes
-SystemCallArchitectures=native
-SystemCallFilter=@system-service
-LockPersonality=yes
-MemoryDenyWriteExecute=yes
 '
   HARDENING_CONTENTS["dbus.service"]='[Service]
 NoNewPrivileges=yes
@@ -304,6 +261,30 @@ SystemCallFilter=@system-service
 LockPersonality=yes
 MemoryDenyWriteExecute=yes
 '
+  HARDENING_CONTENTS["pveproxy.service"]='[Service]
+NoNewPrivileges=yes
+'
+
+  HARDENING_CONTENTS["pvedaemon.service"]='[Service]
+NoNewPrivileges=yes
+'
+
+  HARDENING_CONTENTS["pve-cluster.service"]='[Service]
+NoNewPrivileges=yes
+'
+
+  HARDENING_CONTENTS["pve-ha-crm.service"]='[Service]
+NoNewPrivileges=yes
+'
+
+  HARDENING_CONTENTS["pve-ha-lrm.service"]='[Service]
+NoNewPrivileges=yes
+'
+
+  HARDENING_CONTENTS["corosync.service"]='[Service]
+
+'
+
   for service in "${SERVICES[@]}"; do
     target_dir="/etc/systemd/system/${service}.d"
     conf_file="${target_dir}/hardening.conf"

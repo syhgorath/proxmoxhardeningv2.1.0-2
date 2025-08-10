@@ -135,8 +135,8 @@ EOF
 EOF
 
     # Start and enable auditd
-    systemctl enable auditd --now
-    augenrules --load
+    systemctl enable --now auditd.service || true
+    augenrules --load || true
     systemctl restart auditd
 
     Log "INFO" "Advanced auditing configured and started"

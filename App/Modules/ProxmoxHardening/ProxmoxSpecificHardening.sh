@@ -20,9 +20,9 @@ ApplyProxmoxSpecificHardening() {
 keyboard: tr
 console: xtermjs
 email_from: root@proxmox
-max_workers: 4
-fencing: watchdog
-migration: secure,network=10.1.10.0/24
+
+#fencing: watchdog
+#migration: secure,network=10.1.10.0/24
 
  
 EOF

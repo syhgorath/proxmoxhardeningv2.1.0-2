@@ -135,8 +135,8 @@ kernel.kptr_restrict = 2
 kernel.sysrq = 0
 EOF
 
-    # Apply sysctl settings
-    sysctl --system
+  sysctl -p /etc/sysctl.d/99-proxmox-hardening-v2.conf || true
+    sysctl --system || true
 
     Log "INFO" "Kernel hardening parameters applied"
 

@@ -9,7 +9,7 @@ version=1.0.0
 RegisterModules $module_name $module_description $group
 AddSSHUserEnhanced() {
 
-    if ! confirm_action "Create a new SSH system user?" "n"; then
+    if ! ConfirmAction "Create a new SSH system user?" "n"; then
         return 0
     fi
     whiptail --title "SSH User Management" --msgbox "This wizard will help you create a new SSH user with secure defaults." 10 60 || return 1

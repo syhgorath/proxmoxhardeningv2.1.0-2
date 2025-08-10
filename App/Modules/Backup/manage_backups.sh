@@ -23,7 +23,7 @@ ManageBackups() {
         echo "Oldest backup: $(ls -lt "$BACKUP_DIR" 2>/dev/null | tail -1 | awk '{print $6, $7, $8}')"
         echo "Newest backup: $(ls -lt "$BACKUP_DIR" 2>/dev/null | head -2 | tail -1 | awk '{print $6, $7, $8}')"
 
-        if confirm_action "Clean old backups (>30 days)?" 15 "n"; then
+        if ConfirmAction "Clean old backups (>30 days)?" 15 "n"; then
             find "$BACKUP_DIR" -type f -mtime +30 -delete
             echo "Old backups cleaned"
         fi

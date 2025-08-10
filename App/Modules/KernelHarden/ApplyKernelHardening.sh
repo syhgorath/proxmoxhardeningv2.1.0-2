@@ -101,8 +101,9 @@ net.ipv4.conf.all.rp_filter = 1
 net.ipv4.conf.default.rp_filter = 1
 
 # Log suspicious packets
-net.ipv4.conf.all.Log_martians = 1
-net.ipv4.conf.default.Log_martians = 1
+# Correct lowercase parameter names prevent systemd-sysctl errors
+net.ipv4.conf.all.log_martians = 1
+net.ipv4.conf.default.log_martians = 1
 
 # ICMP settings
 net.ipv4.icmp_echo_ignore_all = 0
@@ -114,7 +115,8 @@ net.core.rmem_default = 262144
 net.core.rmem_max = 16777216
 net.core.wmem_default = 262144
 net.core.wmem_max = 16777216
-net.core.netdev_max_backLog = 5000
+# Increase network backlog (correct key name)
+net.core.netdev_max_backlog = 5000
 net.core.somaxconn = 65535
 
 # ===== FILESYSTEM SECURITY =====
@@ -134,6 +136,11 @@ kernel.kptr_restrict = 2
 # Disable magic SysRq key (except for sync/reboot)
 kernel.sysrq = 0
 EOF
+
+  # Remove BBR setting if the kernel lacks the parameter to avoid boot-time errors
+  if [ ! -f /proc/sys/net/ipv4/tcp_congestion_control ]; then
+    sed -i '/^net.ipv4.tcp_congestion_control/d' /etc/sysctl.d/99-proxmox-hardening-v2.conf
+  fi
 
   sysctl -p /etc/sysctl.d/99-proxmox-hardening-v2.conf || true
     sysctl --system || true

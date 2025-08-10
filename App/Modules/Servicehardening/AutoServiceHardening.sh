@@ -7,6 +7,7 @@ group="hardening"
 module_name="AutoServiceHardening"
 module_description="🛡️ apply advanced systemd service hardening profiles"
 # shellcheck disable=SC2034
+
 version=2.0.0
 RegisterModules "$module_name" "$module_description" "$group"
 
@@ -19,7 +20,8 @@ AutoServiceHardening() {
     echo "UNIT,RESULT,PROFILE" >"$report"
 
     local PROFILE_STRICT PROFILE_MEDIUM PROFILE_LIGHT
-    read -r -d '' PROFILE_STRICT <<'EOF'
+    PROFILE_STRICT="$(
+        cat <<'EOF'
 [Service]
 NoNewPrivileges=yes
 PrivateTmp=yes
@@ -34,7 +36,10 @@ ProtectKernelTunables=yes
 ProtectKernelModules=yes
 ProtectControlGroups=yes
 EOF
-    read -r -d '' PROFILE_MEDIUM <<'EOF'
+    )"
+
+    PROFILE_MEDIUM="$(
+        cat <<'EOF'
 [Service]
 NoNewPrivileges=yes
 PrivateTmp=yes
@@ -45,23 +50,30 @@ RestrictNamespaces=yes
 LockPersonality=yes
 ProtectControlGroups=yes
 EOF
-    read -r -d '' PROFILE_LIGHT <<'EOF'
+    )"
+
+    PROFILE_LIGHT="$(
+        cat <<'EOF'
 [Service]
 NoNewPrivileges=yes
 EOF
+    )"
 
     declare -A ALLOW
     ALLOW["rsyslog.service"]=$'[Service]\nReadWritePaths=/var/log\n'
     ALLOW["systemd-journald.service"]=$'[Service]\nReadWritePaths=/var/log/journal\n'
     ALLOW["auditd.service"]=$'[Service]\nReadWritePaths=/var/log/audit /etc/audit\n'
-    ALLOW["cron.service"]=$'[Service]\nReadWritePaths=/var/spool/cron /var/spool/anacron /etc/cron.d /etc/cron.daily /etc/cron.hourly /etc/cron.monthly /etc/cron.weekly\n'
     ALLOW["fail2ban.service"]=$'[Service]\nReadWritePaths=/var/lib/fail2ban /run/fail2ban /var/log\n'
     ALLOW["ssh.service"]=$'[Service]\nReadWritePaths=/etc/ssh /run/sshd\n'
     ALLOW["rrdcached.service"]=$'[Service]\nReadWritePaths=/var/lib/rrdcached /run/rrdcached\n'
-    ALLOW["lxcfs.service"]=$'[Service]\nReadWritePaths=/var/lib/lxcfs\nPrivateTmp=yes\n'
-    ALLOW["postfix.service"]=$'[Service]\nReadWritePaths=/var/spool/postfix /var/lib/postfix /etc/postfix /var/log\n'
-    ALLOW["postfix@-.service"]=$'[Service]\nReadWritePaths=/var/spool/postfix /var/lib/postfix /etc/postfix /var/log\n'
-
+    ALLOW["lxcfs.service"]=$'[Service]\nReadWritePaths=/var/lib/lxcfs\nPrivateTmp=yes\n'                                                                                              # chrony
+    ALLOW["chrony.service"]=$'[Service]\nReadWritePaths=/var/lib/chrony /run/chrony /etc/chrony\n'                                                                                    # cron (Debian/Proxmox)
+    ALLOW["cron.service"]=$'[Service]\nReadWritePaths=/var/spool/cron /var/spool/anacron /etc/cron.d /etc/cron.daily /etc/cron.hourly /etc/cron.monthly /etc/cron.weekly /run/cron\n' # postfix (+ /run/postfix)
+    ALLOW["postfix.service"]=$'[Service]\nReadWritePaths=/var/spool/postfix /var/lib/postfix /etc/postfix /var/log /run/postfix\n'
+    ALLOW["postfix@-.service"]=$'[Service]\nReadWritePaths=/var/spool/postfix /var/lib/postfix /etc/postfix /var/log /run/postfix\n' # smartmontools (aktifse)
+    ALLOW["smartmontools.service"]=$'[Service]\nReadWritePaths=/var/lib/smartmontools /var/log\n'
+    declare -A UNIT_OVERRIDES
+    UNIT_OVERRIDES["lxcfs.service"]=$'[Service]\nRestrictNamespaces=no\nProtectKernelTunables=no\nDeviceAllow=/dev/fuse rw\n'
     local CRITICAL_UNITS=(
         pveproxy.service pvedaemon.service pve-cluster.service pve-ha-crm.service
         pve-ha-lrm.service pvestatd.service pvescheduler.service pvefw-logger.service
@@ -113,6 +125,8 @@ EOF
         local criticals=("$@")
         local body="$prof"
         [[ -n $allow ]] && body+=$'\n'$allow
+        local override="${UNIT_OVERRIDES[$unit]:-}"
+        [[ -n $override ]] && body+=$'\n'$override
 
         local since_ts
         since_ts="$(date --iso-8601=seconds)"
@@ -131,8 +145,8 @@ EOF
             local jfile="/tmp/${unit}.journal.txt"
             local vfile="/tmp/${unit}.verify.txt"
             capture_journal "$unit" "$since_ts" "$jfile"
-            if verify_unit "$unit" "$vfile" && \
-               ! grep -Ei 'Permission denied|Operation not permitted|read-only file system|seccomp|system call filtered|Denied' "$jfile" >/dev/null; then
+            if verify_unit "$unit" "$vfile" &&
+                ! grep -Ei 'Permission denied|Operation not permitted|read-only file system|seccomp|system call filtered|Denied' "$jfile" >/dev/null; then
                 mv "/etc/systemd/system/${unit}.d/hardening.autotest.conf" "/etc/systemd/system/${unit}.d/hardening.conf"
                 systemctl daemon-reload
                 echo "OK"
@@ -163,29 +177,30 @@ EOF
             echo "$unit,SKIPPED,NOT_LOADED" >>"$report"
             continue
         fi
-        if [[ "$active" != "active" && "$ufs" != "enabled" && "$canstart" == "no" ]]; then
-            echo "$unit,SKIPPED,PASSIVE" >>"$report"
+
+        if [[ "$active" != "active" ]] && { [[ "$ufs" != "enabled" ]] || [[ "$canstart" == "no" ]]; }; then
+            printf '%s\n' "$unit,SKIPPED,PASSIVE" >>"$report"
             continue
         fi
 
         allow="${ALLOW[$unit]:-}"
 
         if result=$(try_profile "$unit" "$PROFILE_STRICT" "$allow" "${CRITICAL_UNITS[@]}"); then
-            echo "$unit,$result,STRICT" >>"$report"
+            printf "$unit,$result,STRICT" >>"$report"
             continue
         fi
         if result=$(try_profile "$unit" "$PROFILE_MEDIUM" "$allow" "${CRITICAL_UNITS[@]}"); then
-            echo "$unit,$result,MEDIUM" >>"$report"
+            printf "$unit,$result,MEDIUM" >>"$report"
             continue
         fi
         if result=$(try_profile "$unit" "$PROFILE_LIGHT" "$allow" "${CRITICAL_UNITS[@]}"); then
-            echo "$unit,$result,LIGHT" >>"$report"
+            printf "$unit,$result,LIGHT" >>"$report"
             continue
         fi
 
         remove_dropin "$unit" "hardening.autotest.conf"
         systemctl daemon-reload
-        echo "$unit,FAIL,NO_PROFILE" >>"$report"
+        printf "$unit,FAIL,NO_PROFILE" >>"$report"
     done
 
     Log "INFO" "Service hardening report: $report"

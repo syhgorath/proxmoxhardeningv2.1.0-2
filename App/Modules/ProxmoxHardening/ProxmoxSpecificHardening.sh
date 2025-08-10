@@ -114,8 +114,8 @@ MAX_CONNECTIONS=50
 EOF
     fi
     # Configure Logrotate for Proxmox Logs
-    cat >/etc/Logrotate.d/proxmox-security <<'EOF'
-/var/log/pveproxy/access.Log {
+    cat >/etc/logrotate.d/proxmox-security <<'EOF'
+/var/log/pveproxy/access.log {
     weekly
     rotate 52
     compress
@@ -128,7 +128,7 @@ EOF
     endscript
 }
 
-/var/log/pvedaemon.Log {
+/var/log/pvedaemon.log {
     weekly
     rotate 52
     compress
@@ -138,7 +138,7 @@ EOF
     create 0640 root adm
 }
 
-/var/log/pve-firewall.Log {
+/var/log/pve-firewall.log {
     weekly
     rotate 26
     compress

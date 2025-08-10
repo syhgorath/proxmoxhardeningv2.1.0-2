@@ -12,12 +12,12 @@ UserHardening() {
     Log "INFO" "Enhancing user and permission hardening..."
     #TODO:CAN BE REMOVED IN FUTURE VERSIONS
     [ ! -d /var/log/sudo-io ] && mkdir -p /var/log/sudo-io
-    [ ! -f /var/log/sudo.Log ] && touch /var/log/sudo.Log
-    chmod 600 /var/log/sudo.Log
+    [ ! -f /var/log/sudo.log ] && touch /var/log/sudo.log
+    chmod 600 /var/log/sudo.log
     # Enhanced Login.defs
-    CreateBackup "/etc/Login.defs"
+    CreateBackup "/etc/login.defs"
  
-    cat >/etc/Login.defs <<'EOF'
+    cat >/etc/login.defs <<'EOF'
 # Enhanced Login Definitions Configuration
 
 # Password aging controls
@@ -42,10 +42,10 @@ USERGROUPS_ENAB yes
 CREATE_HOME     yes
 
 # Login restrictions
-LogIN_RETRIES   3
-LogIN_TIMEOUT   60
+LOGIN_RETRIES   3
+LOGIN_TIMEOUT   60
 MOTD_FILE       /etc/motd
-HUSHLogIN_FILE  .hushLogin
+HUSHLOGIN_FILE  .hushlogin
 
 # Console Login
 CONSOLE_GROUPS  floppy:audio:cdrom
@@ -77,9 +77,9 @@ SUB_GID_MIN     100000
 SUB_GID_MAX     600100000
 SUB_GID_COUNT   65536
 EOF
-   grep -q "^ENCRYPT_METHOD" /etc/Login.defs &&
-        sed -i 's/^ENCRYPT_METHOD.*/ENCRYPT_METHOD yescrypt/' /etc/Login.defs ||
-        echo "ENCRYPT_METHOD yescrypt" >>/etc/Login.defs
+   grep -q "^ENCRYPT_METHOD" /etc/login.defs &&
+        sed -i 's/^ENCRYPT_METHOD.*/ENCRYPT_METHOD yescrypt/' /etc/login.defs ||
+        echo "ENCRYPT_METHOD yescrypt" >>/etc/login.defs
     # Install and configure libpam modules
 
     apt update && apt install -y libpam-pwquality libpam-tmpdir
@@ -138,9 +138,9 @@ Defaults    env_reset
 Defaults    mail_badpass
 Defaults    secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 Defaults    use_pty
-Defaults    Log_input, Log_output
-Defaults    Logfile="/var/log/sudo.Log"
-Defaults    ioLog_dir="/var/log/sudo-io"
+Defaults    log_input, log_output
+Defaults    logfile="/var/log/sudo.log"
+Defaults    iolog_dir="/var/log/sudo-io"
 Defaults    timestamp_timeout=15
 Defaults    passwd_tries=3
 Defaults    passwd_timeout=5

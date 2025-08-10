@@ -37,7 +37,7 @@ ConfigureFileSystemSecurity() {
 * hard nproc 65536
 * soft nofile 65536
 * hard nofile 65536
-* hard maxLogins 3
+* hard maxlogins 3
 root soft nofile 65536
 root hard nofile 65536
 EOF

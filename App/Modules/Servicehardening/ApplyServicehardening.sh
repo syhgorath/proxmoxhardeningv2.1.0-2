@@ -5,7 +5,7 @@ trap 'echo "Error on line $LINENO" >&2' ERR
 group="hardening"
 module_name="ApplyServicehardening"
 module_description="🛡️ Apply advanced service hardening"
-version=1.0.0
+version=2.0.0
 RegisterModules $module_name $module_description $group
 ApplyServicehardening() {
     Log "INFO" "Applying advanced service hardening..."
@@ -44,7 +44,7 @@ ApplyServicehardening() {
 /etc/pve/** r,
 EOF
 
-    service_contents
+    AutoServiceHardening
 
     # Reload systemd
     systemctl daemon-reexec

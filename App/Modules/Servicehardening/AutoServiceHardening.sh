@@ -6,13 +6,15 @@ trap 'echo "Error on line $LINENO" >&2' ERR
 group="hardening"
 module_name="AutoServiceHardening"
 module_description="🛡️ apply advanced systemd service hardening profiles"
+# shellcheck disable=SC2034
 version=2.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 
 AutoServiceHardening() {
     Log "INFO" "Starting systemd service hardening..."
 
-    local report="/etc/proxmox-hardening/unit-hardening-$(date +%F-%H%M%S).csv"
+    local report
+    report="/etc/proxmox-hardening/unit-hardening-$(date +%F-%H%M%S).csv"
     mkdir -p "$(dirname "$report")"
     echo "UNIT,RESULT,PROFILE" >"$report"
 
@@ -84,7 +86,26 @@ EOF
         rm -f "/etc/systemd/system/${u}.d/${n}"
     }
 
-    unit_active() { systemctl is-active -q "$1"; }
+    sc_try_restart() {
+        local unit="$1"
+        systemctl --no-block try-restart "$unit" || return 1
+        for _ in {1..10}; do
+            sleep 1
+            systemctl is-active -q "$unit" && return 0
+        done
+        return 1
+    }
+
+    capture_journal() {
+        local unit="$1" since_ts="$2" out="$3"
+        journalctl -u "$unit" --no-pager --since "$since_ts" >"$out" 2>&1 || true
+    }
+
+    verify_unit() {
+        local unit="$1" out="$2"
+        systemd-analyze verify "$unit" >"$out" 2>&1 || true
+        ! grep -Ei 'cycle|ordering|error|fail' "$out" >/dev/null
+    }
 
     try_profile() {
         local unit="$1" prof="$2" allow="$3"
@@ -92,6 +113,9 @@ EOF
         local criticals=("$@")
         local body="$prof"
         [[ -n $allow ]] && body+=$'\n'$allow
+
+        local since_ts
+        since_ts="$(date --iso-8601=seconds)"
 
         write_dropin "$unit" "$body" "hardening.autotest.conf"
         systemctl daemon-reload
@@ -103,9 +127,12 @@ EOF
             return 0
         fi
 
-        if systemctl try-restart "$unit"; then
-            sleep 2
-            if unit_active "$unit"; then
+        if sc_try_restart "$unit"; then
+            local jfile="/tmp/${unit}.journal.txt"
+            local vfile="/tmp/${unit}.verify.txt"
+            capture_journal "$unit" "$since_ts" "$jfile"
+            if verify_unit "$unit" "$vfile" && \
+               ! grep -Ei 'Permission denied|Operation not permitted|read-only file system|seccomp|system call filtered|Denied' "$jfile" >/dev/null; then
                 mv "/etc/systemd/system/${unit}.d/hardening.autotest.conf" "/etc/systemd/system/${unit}.d/hardening.conf"
                 systemctl daemon-reload
                 echo "OK"

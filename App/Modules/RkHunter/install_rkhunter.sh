@@ -6,7 +6,7 @@ group="hardening"
 module_name="InstallRkHunter"
 module_description="🛡️🛠️ install rkhunter"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
  
 run_rkhunter_check() {
     if command -v rkhunter &>/dev/null; then

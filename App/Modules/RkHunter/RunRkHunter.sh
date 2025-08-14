@@ -6,7 +6,7 @@ group="Utility"
 module_name="RunRkHunter"
 module_description="🛡️ run rkhunter check"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 RunRkHunter() {
 
     # Create a script to run rkhunter checks

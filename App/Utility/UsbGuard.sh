@@ -8,7 +8,7 @@ module_name="UsbGuard"
 module_description="🔒 Enable USBGuard for device control"
 version=1.0.0
 group="hardening"
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
  UsbGuard() {
   echo "[$SCRIPT_COUNT] Enable usbguard"
 

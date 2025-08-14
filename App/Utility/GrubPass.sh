@@ -3,7 +3,7 @@ module_name="GrubPass"
 module_description="🔐 Set GRUB password"
 group="Utility"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 GrubPass() {
     # Get the password hash
     echo "Please enter the password for GRUB:"

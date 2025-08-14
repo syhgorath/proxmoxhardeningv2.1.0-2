@@ -7,7 +7,7 @@ module_name="CheckSystemCompatibility"
 module_description="🔍 Check system compatibility for Proxmox hardening"
 group="Utility"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 CheckSystemCompatibility() {
     Log "INFO" "Checking system compatibility..."
 

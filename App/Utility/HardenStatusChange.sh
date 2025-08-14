@@ -6,7 +6,7 @@ module_name="HardenStatusChange"
 module_description="🛡️ Toggle SSH hardening status"
 group="Utility"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 HardenStatusChange() {
 
     HARDEN_FILE="/etc/systemd/system/ssh.service.d/hardening.conf"

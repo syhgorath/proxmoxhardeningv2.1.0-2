@@ -6,7 +6,7 @@ group="hardening"
 module_name="ConfigureFileSystemSecurity"
 module_description="🛡️ configure filesystem security"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 
 ConfigureFileSystemSecurity() {
     Log "INFO" "Configuring filesystem security..."

@@ -5,7 +5,7 @@ module_name="AcctSysstat"
 module_description="📊 Setup accounting and system statistics"
 version=1.0.0
 group="hardening"
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 AcctSysstat(){
  apt-get update
  apt-get install acct sysstat -y 

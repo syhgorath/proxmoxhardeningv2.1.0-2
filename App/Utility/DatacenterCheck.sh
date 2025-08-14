@@ -6,7 +6,7 @@ module_name="DatacenterCheck"
 module_description="🔍 Check system compatibility for Proxmox Center "
 group="Utility"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 DatacenterCheck() {
 # Proxmox datacenter.cfg geçerli anahtar listesi (Proxmox 8.x için)
 VALID_KEYS=(

@@ -3,7 +3,7 @@ group="hardening"
 module_name="SvcTuner"
 module_description="🔧 Service tuner for Proxmo x"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 SvcTuner() {
 
     tee /usr/local/bin/svc-tuner.sh >/dev/null <<'EOF'

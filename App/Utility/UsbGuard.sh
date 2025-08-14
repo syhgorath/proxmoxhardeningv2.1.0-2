@@ -10,7 +10,7 @@ version=1.0.0
 group="hardening"
 RegisterModules "$module_name" "$module_description" "$group"
  UsbGuard() {
-  echo "[$SCRIPT_COUNT] Enable usbguard"
+  
 
 apt install  usbguard -y
 

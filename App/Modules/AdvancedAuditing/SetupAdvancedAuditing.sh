@@ -5,7 +5,7 @@ trap 'echo "Error on line $LINENO" >&2' ERR
 
 group="hardening"
 module_name="SetupAdvancedAuditing"
-module_description="🛡️ setup advanced auditing"
+module_description="🔍 Setup advanced system auditing"
 version=1.0.0
 RegisterModules $module_name $module_description $group
 
@@ -15,15 +15,17 @@ SetupAdvancedAuditing() {
         apt update && apt install -y auditd audispd-plugins
     fi
     CreateBackup "/etc/audit/auditd.conf"
+ install -d -m 0750 -o root -g root /var/log/audit
+
 
     # Enhanced auditd configuration
     cat >/etc/audit/auditd.conf <<'EOF'
 # Enhanced Auditd Configuration
 local_events = yes
 write_Logs = yes
-LOG_FILE = /var/log/audit/audit.Log
-Log_group = adm
-Log_format = ENRICHED
+log_file = /var/log/audit/audit.Log
+log_group = adm
+log_format = ENRICHED
 flush = INCREMENTAL_ASYNC
 freq = 50
 max_LOG_FILE = 100
@@ -139,5 +141,7 @@ EOF
     augenrules --load || true
     systemctl restart auditd
 
+
+sudo auditctl -s
     Log "INFO" "Advanced auditing configured and started"
 }

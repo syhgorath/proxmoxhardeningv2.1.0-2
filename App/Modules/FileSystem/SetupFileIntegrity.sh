@@ -19,96 +19,76 @@ SetupFileIntegrity() {
     CreateBackup "/etc/aide/aide.conf"
 
     # Enhanced AIDE configuration
-    cat >/etc/aide/aide.conf <<'EOF'
-# Enhanced AIDE Configuration for Proxmox
-database=file:/var/lib/aide/aide.db
-database_out=file:/var/lib/aide/aide.db.new
-database_new=file:/var/lib/aide/aide.db.new
-gzip_dbout=yes
+    tee /etc/aide/aide.conf.d/99-proxmox-rules.conf >/dev/null <<'EOF'
 
-report_url=file:/var/log/aide/aide.log
-report_url=stdout
-summarize_changes=yes
 
-# Custom rules
-Binlib = p+i+n+u+g+s+b+m+c+md5+sha1+sha256
-ConfFiles = p+i+n+u+g+s+b+m+c+md5+sha1+sha256
-logs = p+i+n+u+g+s+b+m+c+md5+sha1+sha256
-Devices = p+i+n+u+g+s+b+c+md5+sha1+sha256
-Databases = p+i+n+u+g+s+b+m+c+md5+sha1+sha256
 
-# System binaries
-/bin Binlib
-/sbin Binlib
-/usr/bin Binlib
-/usr/sbin Binlib
-/usr/local/bin Binlib
-/usr/local/sbin Binlib
+# 99-proxmox-rules.conf — Proxmox özel kurallar (sadece path ve filtreler)
+# NOT: Global ayarlar (database_*, report_*, Checksums vb.) ana dosyada olmalı.
 
-# Configuration files
-/etc ConfFiles
-!/etc/mtab
-!/etc/passwd-
-!/etc/group-
-!/etc/shadow-
-!/etc/gshadow-
-!/etc/security/opasswd
-!/etc/ssh/ssh_host_key
-!/etc/ssh/ssh_host_key.pub
-!/etc/ssh/ssh_host_rsa_key
-!/etc/ssh/ssh_host_rsa_key.pub
-!/etc/ssh/ssh_host_dsa_key
-!/etc/ssh/ssh_host_dsa_key.pub
-!/etc/ssh/ssh_host_ecdsa_key
-!/etc/ssh/ssh_host_ecdsa_key.pub
-!/etc/ssh/ssh_host_ed25519_key
-!/etc/ssh/ssh_host_ed25519_key.pub
+# Sistem ikilileri
+/bin               Full
+/sbin              Full
+/usr/bin           Full
+/usr/sbin          Full
+/usr/local/bin     Full
+/usr/local/sbin    Full
 
-# Proxmox specific
-/etc/pve ConfFiles
-/usr/share/perl5/PVE ConfFiles
-/usr/share/pve-manager ConfFiles
+# Kütüphaneler
+/lib               Full
+/lib64             Full
+/usr/lib           Full
+/usr/lib64         Full
 
-# System libraries
-/lib Binlib
-/lib64 Binlib
-/usr/lib Binlib
-/usr/lib64 Binlib
+# Boot & kernel
+/boot              Full
 
-# Boot and kernel
-/boot Binlib
+# Konfigürasyonlar (bazı güvenli hariç tutmalarla)
+/etc               Full
+!regex:^/etc/mtab$
+!regex:^/etc/(passwd-|group-|shadow-|gshadow-|security/opasswd)$
+!regex:^/etc/ssh/ssh_host_.*$
 
-# Critical system files
-/root/\.ssh ConfFiles
+# Proxmox özel yolları
+/etc/pve                 Full
+/usr/share/perl5/PVE     Full
+/usr/share/pve-manager   Full
 
-# Device files
-/dev Devices
+# Hassas kullanıcı anahtarları
+/root/.ssh          Full
 
-# Temporary and variable files (selective monitoring)
-!/var/log/.*
-!/var/cache/.*
-!/var/tmp/.*
-!/tmp/.*
-!/proc/.*
-!/sys/.*
-!/dev/pts/.*
-!/dev/shm/.*
-!/var/lib/aide/aide.db.*
-!/var/lib/dhcp/.*
-!/var/run/.*
-!/var/lock/.*
-!/var/spool/.*
+# Gürültü (volatile) yollar — rapor gürültüsünü azalt
+!regex:^/dev(/.*)?$
+!regex:^/proc(/.*)?$
+!regex:^/sys(/.*)?$
+!regex:^/run(/.*)?$
+!regex:^/tmp(/.*)?$
+!regex:^/var/tmp(/.*)?$
+!regex:^/var/cache(/.*)?$
+!regex:^/var/log/.*\.gz$
+!regex:^/var/log/(wtmp|btmp|lastlog)$
+!regex:^/var/lib/aide(/.*)?$
+!regex:^/var/lib/docker(/.*)?$
+!regex:^/lost\+found(/.*)?$
+!regex:^/dev/pts(/.*)?$
+!regex:^/dev/shm(/.*)?$
+!regex:^/var/lib/dhcp(/.*)?$
+!regex:^/var/lock(/.*)?$
+!regex:^/var/spool(/.*)?$
 EOF
-
+    sed -i 's/\<sha1\>//g' /etc/aide/aide.conf
+    sed -i 's/^NORMAL.*/NORMAL = p+i+n+u+g+s+m+c+acl+xattrs+sha512/' /etc/aide/aide.conf
     # Initialize AIDE database
     if [[ ! -f /var/lib/aide/aide.db ]]; then
         Log "INFO" "Initializing AIDE database (this may take several minutes)..."
-        aideinit
+        aide -D -c /etc/aide/aide.conf --log-level=debug
+        install -d -m 0700 /var/lib/aide
+        aide --init -c /etc/aide/aide.conf
         if [[ -f /var/lib/aide/aide.db.new ]]; then
             mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db
         fi
     fi
-
+    aide --check -c /etc/aide/aide.conf
     # Create AIDE check script
     cat >/usr/local/bin/aide-check.sh <<'EOF'
 #!/bin/bash
@@ -202,5 +182,14 @@ EOF
 }
 EOF
 
+    chmod 600 /etc/crontab
+    chmod 700 /etc/cron.d /etc/cron.daily /etc/cron.hourly /etc/cron.weekly /etc/cron.monthly
+    groupadd -r proc || true
+    usermod -aG proc $(whoami)
+    echo 'proc /proc proc defaults,hidepid=2,gid=proc 0 0' | tee -a /etc/fstab
+    mount -o remount /proc
+
+    ln -sf /boot/vmlinuz-$(uname -r) /vmlinuz
+    ln -sf /boot/initrd.img-$(uname -r) /initrd.img
     Log "INFO" "File integrity monitoring with AIDE configured"
 }

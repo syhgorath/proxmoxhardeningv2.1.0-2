@@ -4,9 +4,11 @@
 #set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
-module_name="ShowProgress"
-module_description="ShowProgress function to display progress in the terminal."
+module_name="ApplyKernelHardening"
+module_description="Kernel hardening (safe, levels, dry-run, per-key apply)"
 version=1.0.0
+group="hardening"
+
 # =========================
 # Fallbacks (module framework yoksa)
 # =========================
@@ -54,11 +56,11 @@ net.ipv6.conf.all.forwarding = 1
 kernel.randomize_va_space = 2
 vm.mmap_rnd_bits = 32
 vm.mmap_rnd_compat_bits = 16
-kernel.kptr_restrict = 1
+kernel.kptr_restrict = 2
 kernel.dmesg_restrict = 1
 kernel.printk = 3 3 3 3
 kernel.unprivileged_bpf_disabled = 1
-net.core.bpf_jit_harden = 1
+net.core.bpf_jit_harden = 2
 net.core.bpf_jit_kallsyms = 0
 kernel.yama.ptrace_scope = 1
 kernel.perf_event_paranoid = 2
@@ -286,9 +288,15 @@ ApplyKernelHardening() {
 TestKernelHardening() {
   # Renkler (TTY değilse boş)
   if [[ -t 1 ]]; then
-    GREEN='\033[0;32m'; RED='\033[0;31m'; YELLOW='\033[1;33m'; NC='\033[0m'
+    GREEN='\033[0;32m'
+    RED='\033[0;31m'
+    YELLOW='\033[1;33m'
+    NC='\033[0m'
   else
-    GREEN=''; RED=''; YELLOW=''; NC=''
+    GREEN=''
+    RED=''
+    YELLOW=''
+    NC=''
   fi
 
   echo "=== Kernel Hardening Quick Test (with metrics) ==="
@@ -298,22 +306,25 @@ TestKernelHardening() {
   GetSysCtl() { sysctl -n "$1" 2>/dev/null || echo "unknown"; }
 
   #varname, value, recommended, message
-   
-    
+
   # /proc/net/netstat → TcpExt sayaçlarını çek
   read_tcpext() {
     local key="$1"
-    [[ -r /proc/net/netstat ]] || { echo 0; return; }
+    [[ -r /proc/net/netstat ]] || {
+      echo 0
+      return
+    }
     mapfile -t _lines < <(grep -E '^TcpExt:' /proc/net/netstat)
-    if ((${#_lines[@]}>=2)); then
-      local idx=$(( ${#_lines[@]} - 2 ))
+    if ((${#_lines[@]} >= 2)); then
+      local idx=$((${#_lines[@]} - 2))
       local header="${_lines[$idx]#TcpExt: }"
-      local values="${_lines[$idx+1]#TcpExt: }"
+      local values="${_lines[$idx + 1]#TcpExt: }"
       read -ra H <<<"$header"
       read -ra V <<<"$values"
       for i in "${!H[@]}"; do
         if [[ "${H[$i]}" == "$key" ]]; then
-          echo "${V[$i]}"; return
+          echo "${V[$i]}"
+          return
         fi
       done
     fi
@@ -337,7 +348,8 @@ TestKernelHardening() {
   if [[ "$fwd4" == "1" ]]; then
     echo -e "${GREEN}✅ IPv4 forwarding enabled${NC}"
   else
-    echo -e "${RED}❌ IPv4 forwarding disabled${NC}"; ((failed++))
+    echo -e "${RED}❌ IPv4 forwarding disabled${NC}"
+    ((failed++))
   fi
   if [[ "$fwd6" == "1" ]]; then
     echo -e "${GREEN}✅ IPv6 forwarding enabled${NC}"
@@ -349,7 +361,8 @@ TestKernelHardening() {
   local moddis
   moddis=$(GetSysCtl kernel.modules_disabled)
   if [[ "$moddis" == "1" ]]; then
-    echo -e "${RED}❌ kernel.modules_disabled=1 (reboot gerekebilir)${NC}"; ((failed++))
+    echo -e "${RED}❌ kernel.modules_disabled=1 (reboot gerekebilir)${NC}"
+    ((failed++))
   else
     echo -e "${GREEN}✅ Module loading enabled${NC}"
   fi
@@ -414,7 +427,7 @@ TestKernelHardening() {
   done
 
   # 9) Özet
-  if ((failed==0)); then
+  if ((failed == 0)); then
     echo -e "${GREEN}✅ Test passed${NC}"
     return 0
   else
@@ -423,7 +436,6 @@ TestKernelHardening() {
   fi
 }
 # ---- /drop-in replacement ----
-
 
 RevertKernelHardening() {
   Log WARN "Reverting kernel hardening (removing $CFG, keeping backups)..."

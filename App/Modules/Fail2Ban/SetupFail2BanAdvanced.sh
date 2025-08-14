@@ -1,178 +1,147 @@
 #!/bin/bash
-#set -euo pipefail
+#set -Eeuo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 
 group="hardening"
 module_name="SetupFail2BanAdvanced"
-module_description="🛡️ setup fail2ban"
+module_description="🛡️ Setup advanced Fail2Ban configuration"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
+
 SetupFail2BanAdvanced() {
     Log "INFO" "Setting up advanced Fail2Ban configuration..."
 
-    # Ensure Fail2Ban and required dependencies are installed
-    apt update && apt install -y fail2ban iptables-persistent
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -y
+    apt-get install -y fail2ban || {
+        echo "fail2ban install failed"
+        exit 1
+    }
 
+    # ---- Banaction autodetect (prefer nftables, fallback iptables) ----
+    if command -v nft >/dev/null 2>&1; then
+        ACTION_MULTI="nftables-multiport"
+        ACTION_ALL="nftables-allports"
+    else
+        ACTION_MULTI="iptables-multiport"
+        ACTION_ALL="iptables-allports"
+    fi
+    Log "INFO" "Fail2Ban actions → ${ACTION_MULTI} / ${ACTION_ALL}"
+
+    # ---- Filters (single, canonical versions) ----
+    install -d -m 755 /etc/fail2ban/filter.d
+
+    # pveproxy auth failure'ları (journald/syslog)
+    tee /etc/fail2ban/filter.d/proxmox-web.conf >/dev/null <<'EOF'
+[Definition]
+failregex = ^\w{3}\s+\d+\s[\d:]+ [._\w-]+ pveproxy\[\d+\]: authentication failure;.* rhost=<HOST>
+ignoreregex =
+EOF
+
+    # pveproxy access.log'daki 401 ticket istekleri
+    tee /etc/fail2ban/filter.d/proxmox-api.conf >/dev/null <<'EOF'
+[Definition]
+failregex = ^<HOST> - - \[.*\] "POST /api2/json/access/ticket HTTP/1\.[01]" 401
+ignoreregex =
+EOF
+
+    # Nginx reverse-proxy üzerinden PVE'ye gidiyorsan (access.log 401)
+    tee /etc/fail2ban/filter.d/nginx-proxmox.conf >/dev/null <<'EOF'
+[Definition]
+failregex = ^<HOST> - - \[.*\] "POST /api2/json/access/ticket HTTP/1\.[01]" 401
+ignoreregex =
+EOF
+
+    # ---- jail.local (clean) ----
     CreateBackup "/etc/fail2ban/jail.local"
-
-    # Advanced Fail2Ban configuration
-    cat >/etc/fail2ban/jail.local <<'EOF'
+    cat >/etc/fail2ban/jail.local <<EOF
 [DEFAULT]
-# Global settings
-
-bantime = 86400
-findtime = 3600
-maxretry = 3
-backend = systemd
+bantime   = 1d
+findtime  = 1h
+maxretry  = 3
+backend   = systemd
 allowipv6 = auto
-usedns = warn
-Logencoding = auto
-enabled = false
-mode = normal
-filter = %(__name__)s[mode=%(mode)s]
+usedns    = warn
+logencoding = auto
+enabled   = false
+mode      = normal
+filter    = %(__name__)s[mode=%(mode)s]
 destemail = root@localhost
-sender = fail2ban@localhost
-mta = sendmail
-protocol = tcp
-chain = <known/chain>
-port = 0:65535
-fail2ban_agent = Fail2Ban/%(fail2ban_version)s
+sender    = fail2ban@localhost
+mta       = sendmail
 
-# Actions
-banaction = iptables-multiport
-banaction_allports = iptables-allports
-action = %(action_)s
+banaction          = ${ACTION_MULTI}
+banaction_allports = ${ACTION_ALL}
 
 [sshd]
-enabled = true
-port = ssh
-filter = sshd
-#Logpath = /var/log/auth.Log
+enabled  = true
+port     = ssh
+filter   = sshd
 maxretry = 3
-bantime = 86400
-findtime = 3600
-
-[sshd-ddos]
-enabled = false
-port = ssh
-filter = sshd-ddos
-#Logpath = /var/log/auth.Log
-maxretry = 6
-bantime = 86400
-findtime = 3600
+bantime  = 1d
+findtime = 1h
 
 [proxmox-web]
-enabled = true
-port = 8006
-filter = proxmox-web
-Logpath = /var/log/daemon.log
-maxretry = 3
-bantime = 86400
-findtime = 3600
-
-[nginx-proxmox]
 enabled  = true
 port     = 8006
+filter   = proxmox-web
+backend  = systemd
+maxretry = 3
+bantime  = 1d
+findtime = 1h
+
+[proxmox-api]
+enabled  = true
+port     = 8006
+backend  = auto
+filter   = proxmox-api
+logpath  = /var/log/pveproxy/access.log
+maxretry = 5
+bantime  = 1d
+findtime = 1h
+
+# Nginx reverse-proxy kullanıyorsan bu jail'i enable edeceğiz (aşağıda otomatik)
+[nginx-proxmox]
+enabled  = false
+port     = 8006
+backend  = auto
 filter   = nginx-proxmox
-Logpath  = /var/log/nginx/error.log
+logpath  = /var/log/nginx/access.log
 maxretry = 3
 bantime  = 1d
 
-[proxmox-api]
-enabled = true
-port = 8006
-filter = proxmox-api
-Logpath = /var/log/pveproxy/access.log 
-maxretry = 5
-bantime = 86400
-findtime = 3600
-
-[apache-auth]
-enabled = false
-
-[apache-badbots]
-enabled = false
-
-[apache-noscript]
-enabled = false
-
-[apache-overflows]
-enabled = false
-
-[apache-nohome]
-enabled = false
-
-[apache-botsearch]
-enabled = false
-
-[postfix]
-enabled = false
-
-[postfix-sasl]
-enabled = false
-
-[dovecot]
-enabled = false
-
 [recidive]
-enabled = true
-filter = recidive
-Logpath = /var/log/fail2ban.log
-action = %(action_mwl)s
-bantime = 604800
-findtime = 86400
-maxretry = 5
+enabled   = true
+filter    = recidive
+logpath   = /var/log/fail2ban.log
+banaction = ${ACTION_ALL}
+bantime   = 7d
+findtime  = 1d
+maxretry  = 5
+action    = %(action_)s
 EOF
 
-    # Create Proxmox-specific filters
-    cat >/etc/fail2ban/filter.d/proxmox-web.conf <<'EOF'
-[Definition]
-failregex = pvedaemon\[.*\]: authentication failure; rhost=<HOST> user=.* msg=.*
-            pveproxy\[.*\]: authentication failure; rhost=<HOST> user=.* msg=.*
-ignoreregex =
-EOF
+    # ---- Nginx tespiti: varsa nginx-proxmox jail'ini aç ----
+    if systemctl list-unit-files | grep -q '^nginx.service'; then
+        if [ -f /var/log/nginx/access.log ]; then
+            sed -i 's/^\(\[nginx-proxmox\][^\n]*\n\)enabled\s*=\s*false/\1enabled = true/' /etc/fail2ban/jail.local || true
+            Log "INFO" "Enabled nginx-proxmox jail (nginx detected)"
+        else
+            Log "WARN" "nginx.service var ama /var/log/nginx/access.log yok → nginx-proxmox jail disabled"
+        fi
+    else
+        Log "INFO" "nginx not found → nginx-proxmox jail disabled"
+    fi
 
-    cat >/etc/fail2ban/filter.d/proxmox-api.conf <<'EOF'
-[Definition]
-failregex = pvedaemon\[.*\]: <HOST> - authentication failure.*
-            pvesh\[.*\]: <HOST> - authentication failure.*
-ignoreregex =
-EOF
+    # ---- Yapılandırmayı test et ve başlat ----
+    systemctl enable fail2ban >/dev/null || true
+    # Opsiyonel: örnek regex testi (log varsa)
+    [ -f /var/log/daemon.log ] && fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox-web.conf -v || true
+    [ -f /var/log/pveproxy/access.log ] && fail2ban-regex /var/log/pveproxy/access.log /etc/fail2ban/filter.d/proxmox-api.conf -v || true
 
-    # Create advanced action for notification
-    cat >/etc/fail2ban/action.d/mail-whois-lines.local <<'EOF'
-[Definition]
-actionstart = printf %%b "Hi,\n
-              The jail <name> has been started successfully.\n
-              Regards,\n
-              Fail2Ban" | mail -s "[Fail2Ban] <name>: started on <fq-hostname>" <dest>
-
-actionstop = printf %%b "Hi,\n
-             The jail <name> has been stopped.\n
-             Regards,\n
-             Fail2Ban" | mail -s "[Fail2Ban] <name>: stopped on <fq-hostname>" <dest>
-
-actioncheck =
-
-actionban = printf %%b "Hi,\n
-            The IP <ip> has just been banned by Fail2Ban after
-            <failures> attempts against <name>.\n\n
-            Here is more information about <ip>:\n
-            `/usr/bin/whois <ip> | grep -v "^%%"`\n
-            Regards,\n
-            Fail2Ban" | mail -s "[Fail2Ban] <name>: banned <ip> from <fq-hostname>" <dest>
-
-actionunban =
-
-[Init]
-name = default
-dest = root
-EOF
-
-    # Enable and start Fail2Ban
-    systemctl enable fail2ban
     systemctl restart fail2ban
-
+    sleep 1
+    fail2ban-client status | sed -n '1,200p'
     Log "INFO" "Advanced Fail2Ban configured and started"
 }

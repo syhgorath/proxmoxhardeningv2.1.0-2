@@ -1,22 +1,30 @@
 #!/bin/bash
-#set -euo pipefail
+#set -Eeuo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
+
 group="hardening"
 module_name="UserHardening"
 module_description="🛡️ enhance user permission hardening"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
+
+# Opsiyon: sudo yoksa otomatik kurulsun mu? (true/false)
+INSTALL_SUDO_IF_MISSING="${INSTALL_SUDO_IF_MISSING:-true}"
 
 UserHardening() {
     Log "INFO" "Enhancing user and permission hardening..."
-    #TODO:CAN BE REMOVED IN FUTURE VERSIONS
-    [ ! -d /var/log/sudo-io ] && mkdir -p /var/log/sudo-io
-    [ ! -f /var/log/sudo.log ] && touch /var/log/sudo.log
+
+    export DEBIAN_FRONTEND=noninteractive
+
+    # --- sudo IO log dizini ve dosyası ---
+    install -d -m 700 /var/log/sudo-io
+    [ -f /var/log/sudo.log ] || touch /var/log/sudo.log
     chmod 600 /var/log/sudo.log
-    # Enhanced Login.defs
+
+    # --- /etc/login.defs yedeği ve güvenli içerik ---
     CreateBackup "/etc/login.defs"
- 
+   
     cat >/etc/login.defs <<'EOF'
 # Enhanced Login Definitions Configuration
 
@@ -47,10 +55,6 @@ LOGIN_TIMEOUT   60
 MOTD_FILE       /etc/motd
 HUSHLOGIN_FILE  .hushlogin
 
-# Console Login
-CONSOLE_GROUPS  floppy:audio:cdrom
-TTYPERM         0600
-
 # Environment
 ENV_SUPATH      PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ENV_PATH        PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
@@ -59,12 +63,12 @@ ENV_PATH        PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
 MAIL_DIR        /var/mail
 MAIL_FILE       .mail
 
-# Password encryption method
+# Password encryption method (modern)
 ENCRYPT_METHOD  yescrypt
+YESCRYPT_COST_FACTOR 7
 
 # Home directory settings
-DEFAULT_HOME    yes
-
+DEFAULT_HOME    no
 
 # Chroot settings
 CHFN_RESTRICT   rwh
@@ -76,61 +80,89 @@ SUB_UID_COUNT   65536
 SUB_GID_MIN     100000
 SUB_GID_MAX     600100000
 SUB_GID_COUNT   65536
+
+# Legacy console directives intentionally disabled by hardening:
+# CONSOLE_GROUPS disabled by hardening
+# TTYPERM disabled by hardening
 EOF
-   grep -q "^ENCRYPT_METHOD" /etc/login.defs &&
-        sed -i 's/^ENCRYPT_METHOD.*/ENCRYPT_METHOD yescrypt/' /etc/login.defs ||
-        echo "ENCRYPT_METHOD yescrypt" >>/etc/login.defs
-    # Install and configure libpam modules
 
-    apt update && apt install -y libpam-pwquality libpam-tmpdir
+    # --- PAM modülleri (idempotent kurulum) ---
+    if ! dpkg -s libpam-pwquality >/dev/null 2>&1 || ! dpkg -s libpam-tmpdir >/dev/null 2>&1; then
+        apt-get update -y
+        apt-get install -y libpam-pwquality libpam-tmpdir
+    fi
 
+    # --- /etc/pam.d/common-password yedeği ve politika ---
     CreateBackup "/etc/pam.d/common-password"
-    # password [success=1 default=ignore] pam_unix.so try_first_pass use_authtok yescrypt
-    # password [success=1 default=ignore] pam_argon2.so argon2id m_cost=65536 t_cost=2 parallel=1
-
-    # Enhanced PAM password policy
     cat >/etc/pam.d/common-password <<'EOF'
 #
 # /etc/pam.d/common-password - password-related modules common to all services
 #
-# This file is included from other service-specific PAM config files,
-# and should contain a list of the password-related modules that define
-# the central authentication scheme for use on the system
 
-# Enhanced password complexity requirements
-password    requisite   pam_pwquality.so retry=3 minlen=12 difok=3 ucredit=-1 lcredit=-1 dcredit=-1 ocredit=-1 maxrepeat=3 maxsequence=3 maxclasschg=3 reject_username gecoscheck=1 enforce_for_root
+# Password complexity policy
+password    requisite   pam_pwquality.so retry=3 minlen=12 difok=3 ucredit=-1 lcredit=-1 dcredit=-1 ocredit=-1 maxrepeat=3 maxsequence=3 maxclassrepeat=3 reject_username gecoscheck=1 dictcheck=1 enforce_for_root
 
-# SHA512 encryption with high rounds
-password [success=1 default=ignore] pam_unix.so obscure yescrypt
+# Use yescrypt with fixed cost and reuse the verified token
+password    [success=1 default=ignore] pam_unix.so yescrypt rounds=7 use_authtok
 
-# The standard Unix authentication module
+# Standard modules
 password    requisite   pam_deny.so
-
-# Prime the stack with a positive return value.
 password    required    pam_permit.so
 EOF
 
-    # Enhanced umask settings
-    grep -q "pam_umask.so" /etc/pam.d/common-session || echo "session optional pam_umask.so umask=027" >>/etc/pam.d/common-session
-    grep -q "pam_tmpdir.so" /etc/pam.d/common-session || echo "session optional pam_tmpdir.so" >>/etc/pam.d/common-session
+    # --- PAM faillock (başarısız giriş denetimi) ---
+    if [ ! -f /etc/security/faillock.conf ]; then
+        cat >/etc/security/faillock.conf <<'EOF'
+deny = 5
+unlock_time = 900
+fail_interval = 900
+audit
+EOF
+    fi
+    # common-auth entegrasyonu (idempotent)
+    grep -q 'pam_faillock.so preauth' /etc/pam.d/common-auth || \
+        sed -i '1iauth required pam_faillock.so preauth silent' /etc/pam.d/common-auth
+    grep -q 'pam_faillock.so authfail' /etc/pam.d/common-auth || \
+        sed -i '/pam_unix.so/aauth [default=die] pam_faillock.so authfail' /etc/pam.d/common-auth
+    # common-account entegrasyonu (idempotent)
+    grep -q 'pam_faillock.so' /etc/pam.d/common-account || \
+        sed -i '1iaccount required pam_faillock.so' /etc/pam.d/common-account
 
-    # Secure cron and at
+    # --- Oturum umask ve tmpdir ---
+    grep -q "pam_umask.so" /etc/pam.d/common-session   || echo "session optional pam_umask.so umask=027" >>/etc/pam.d/common-session
+    grep -q "pam_tmpdir.so" /etc/pam.d/common-session  || echo "session optional pam_tmpdir.so" >>/etc/pam.d/common-session
+
+    # --- cron/at allow-list (root ile sınırla) ---
     rm -f /etc/cron.deny /etc/at.deny
-    touch /etc/cron.allow /etc/at.allow
-    chmod 600 /etc/cron.allow /etc/at.allow
-    chown root:root /etc/cron.allow /etc/at.allow
+    : > /etc/cron.allow
+    : > /etc/at.allow
     echo "root" >/etc/cron.allow
     echo "root" >/etc/at.allow
+    chmod 600 /etc/cron.allow /etc/at.allow
+    chown root:root /etc/cron.allow /etc/at.allow
 
-    # Secure important file permissions
+    # --- Kritik izinler ---
     chmod 700 /root
+    chown root:shadow /etc/shadow /etc/gshadow 2>/dev/null || true
     chmod 600 /etc/shadow /etc/gshadow
     chmod 644 /etc/passwd /etc/group
-    chmod 600 /etc/ssh/ssh_host_*
-    chmod 644 /etc/ssh/ssh_host_*.pub
+    chmod 600 /etc/ssh/ssh_host_* 2>/dev/null || true
+    chmod 644 /etc/ssh/ssh_host_*.pub 2>/dev/null || true
+    chmod 600 /etc/crontab 2>/dev/null || true
+    chmod 700 /etc/cron.d /etc/cron.daily /etc/cron.hourly /etc/cron.weekly /etc/cron.monthly
 
-    # Enhanced sudo configuration
-    if command -v sudo &>/dev/null; then
+    # --- sudoers (gerekirse sudo'yu otomatik kur, sonra sertleştir) ---
+    if ! command -v sudo >/dev/null 2>&1; then
+        if [ "$INSTALL_SUDO_IF_MISSING" = "true" ]; then
+            Log "INFO" "sudo not found; installing..."
+            apt-get update -y
+            apt-get install -y sudo
+        else
+            Log "WARN" "sudo not found and auto-install disabled (INSTALL_SUDO_IF_MISSING=false); skipping sudo hardening."
+        fi
+    fi
+
+    if command -v sudo >/dev/null 2>&1; then
         CreateBackup "/etc/sudoers"
         cat >/etc/sudoers.d/99-hardening <<'EOF'
 # Enhanced sudo security configuration
@@ -141,17 +173,21 @@ Defaults    use_pty
 Defaults    log_input, log_output
 Defaults    logfile="/var/log/sudo.log"
 Defaults    iolog_dir="/var/log/sudo-io"
+Defaults    tty_tickets
 Defaults    timestamp_timeout=15
 Defaults    passwd_tries=3
 Defaults    passwd_timeout=5
-Defaults    requiretty
 Defaults    !visiblepw
-Defaults    always_set_home
 Defaults    match_group_by_gid
-Defaults    always_query_group_plugin
 EOF
         chmod 440 /etc/sudoers.d/99-hardening
+        visudo -cf /etc/sudoers && Log "INFO" "sudoers syntax OK" || { echo "sudoers syntax FAILED"; exit 1; }
     fi
+for u in $(awk -F: '($3>=1000)&&($7!~/nologin|false/){print $1}' /etc/passwd); do
+  grep -q "^$u:\$y\$" /etc/shadow || echo "rehash gerektirir -> $u"
+    Log "INFO" "Userencry for $u rehashed"
+done
+grep -R "pam_tmpdir.so" /etc/pam.d/common-session* || echo "session optional pam_tmpdir.so" | sudo tee -a /etc/pam.d/common-session
 
     Log "INFO" "User and permission hardening enhanced"
 }

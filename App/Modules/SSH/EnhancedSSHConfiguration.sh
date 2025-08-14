@@ -5,7 +5,7 @@ trap 'echo "Error on line $LINENO" >&2' ERR
 
 group="hardening"
 module_name="EnhancedSSHConfiguration"
-module_description="👤 Manage SSH settings and configurations"
+module_description="🔒 Enhanced SSH configuration for Proxmox"
 version=1.0.0
 RegisterModules $module_name $module_description $group
 EnhancedSSHConfiguration() {
@@ -38,7 +38,7 @@ ClientAliveInterval 300
 ClientAliveCountMax 2
 LoginGraceTime 20
 MaxAuthTries 3
-MaxSessions 5
+MaxSessions 2
 MaxStartups 10:30:60
 IgnoreRhosts yes
 HostbasedAuthentication no

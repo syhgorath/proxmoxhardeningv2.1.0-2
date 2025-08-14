@@ -195,6 +195,6 @@ while true; do
   esac
 done
 EOF
-    sudo chmod +x /usr/local/bin/svc-tuner.sh}
-    # set -euo pipefail
+    sudo chmod +x /usr/local/bin/svc-tuner.sh
+   
 }

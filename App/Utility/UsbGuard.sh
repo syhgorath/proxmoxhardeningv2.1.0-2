@@ -1,7 +1,7 @@
 #!/bin/bash
 # Useb Guard.sh
 
-set -euo pipefail
+#set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 module_name="UsbGuard"

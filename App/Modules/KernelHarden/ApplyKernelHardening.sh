@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Proxmox VE 9 — Safe Kernel Hardening (combined)
 # Version: 3.0.0 (levels + dry-run + per-key apply + prune + revert)
-#set -euo pipefail
+set -euo pipefail
 IFS=$'\n\t'
 trap 'echo "Error on line $LINENO" >&2' ERR
 module_name="ApplyKernelHardening"

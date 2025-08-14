@@ -16,8 +16,8 @@ CheckRoot
 
 # 3) Autoload
 source "$(dirname "$0")/Autoload.sh"
-Autoload   "$(dirname "$0")/App"   # path’i net ver
 source "$(dirname "$0")/App/Helpers/RegisterModules.sh"
+Autoload   "$(dirname "$0")/App"   # path’i net ver
 
 
 # 5) Döngü

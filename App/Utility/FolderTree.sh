@@ -6,7 +6,7 @@ module_name="FolderTree"
 module_description="Display a tree structure of files and directories with sizes."
 group="Utility"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 FolderTree() {
   red='\033[0;31m'
   green='\033[0;32m'

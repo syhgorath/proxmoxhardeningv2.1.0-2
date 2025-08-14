@@ -6,7 +6,7 @@ group="MainMenu"
 module_name="AddSSHUserEnhanced"
 module_description="🛡️ add ssh user enhanced"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 AddSSHUserEnhanced() {
 
     if ! ConfirmAction "Create a new SSH system user?" "n"; then

@@ -7,7 +7,7 @@ group="hardening"
 module_name="SetupAdvancedAuditing"
 module_description="🔍 Setup advanced system auditing"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 
 SetupAdvancedAuditing() {
     Log "INFO" "Setting up advanced system auditing..."

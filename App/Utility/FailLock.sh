@@ -3,7 +3,7 @@ module_name="FailLock"
 module_description="🔒 Configure faillock for account lockout"
 group="hardening"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 FailLock() {
     Log "INFO" "Starting faillock configuration..."
 

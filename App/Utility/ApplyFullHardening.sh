@@ -3,7 +3,7 @@ module_name="ApplyFullHardening"
 module_description="🚀  Comprehensive Proxmox security hardening script"
 group="MainMenu"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 ApplyFullHardening() {
     IFS=' ' read -ra HARDENING_STEPS <<<"${GROUP_INDEX['hardening']}"
     local total_steps=${#HARDENING_STEPS[@]}

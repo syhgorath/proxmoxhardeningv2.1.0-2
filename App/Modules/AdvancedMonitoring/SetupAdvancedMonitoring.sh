@@ -7,7 +7,7 @@ group="hardening"
 module_name="SetupAdvancedMonitoring"
 module_description="🛡️ setup advanced monitor"
 version=1.0.0
-RegisterModules $module_name $module_description $group
+RegisterModules "$module_name" "$module_description" "$group"
 SetupAdvancedMonitoring() {
     Log "INFO" "Setting up advanced security monitoring..."
 

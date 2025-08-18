@@ -20,10 +20,7 @@ apt install  usbguard -y
   systemctl enable usbguard.service
   systemctl start usbguard.service
 
-  if [[ $VERBOSE == "Y" ]]; then
-    systemctl status usbguard.service --no-pager
-    echo
-  fi
+ 
 
 
 }

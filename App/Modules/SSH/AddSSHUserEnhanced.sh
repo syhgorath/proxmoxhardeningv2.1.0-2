@@ -71,6 +71,18 @@ AddSSHUserEnhanced() {
         if ! command -v sudo &>/dev/null; then
             apt install sudo -y
         fi
+
+        grep -R "Defaults\s\+\(targetpw\|rootpw\)" -n /etc/sudoers* || echo "OK: yok"
+
+        # Varsa sil:
+        cp -a /etc/sudoers /root/sudoers.bak.$(date +%F-%H%M)
+        sed -ri '/^\s*Defaults\s+(targetpw|rootpw)\b/d' /etc/sudoers
+        for f in /etc/sudoers.d/*; do
+            [ -f "$f" ] || continue
+            cp -a "$f" "$f.bak.$(date +%F-%H%M)"
+            sed -ri '/^\s*Defaults\s+(targetpw|rootpw)\b/d' "$f"
+        done
+        visudo -c
         usermod -aG sudo "$ssh_user"
         Log "INFO" "Sudo privileges granted to $ssh_user"
     fi
@@ -93,7 +105,7 @@ AddSSHUserEnhanced() {
 ➡ SSH Private Key: $ssh_dir/$key_name
 
 To download:
-scp $ssh_user@$IPV4:$ssh_dir/$key_name ~/.ssh/
+scp root@$IPV4:$ssh_dir/$key_name ~/.ssh/
 
 Example SSH config:
 Host proxmox-$ssh_user

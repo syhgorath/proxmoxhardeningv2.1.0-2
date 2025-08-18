@@ -142,6 +142,6 @@ EOF
     systemctl restart auditd
 
 
-sudo auditctl -s
+ auditctl -s
     Log "INFO" "Advanced auditing configured and started"
 }

@@ -113,7 +113,13 @@ ApplyProxmoxAccessHardening() {
 
   Log "INFO" "Proxmox access hardening applied (MODE=${MODE})"
 }
-
+normalize_cidrs() {
+  # Bozuk IFS/tek-string/v|rgül/boşluk ayırmalarını satıra çevir
+  # örn: "10.1.10.0/24 10.8.0.0/24" veya "10.1.10.0/24,10.8.0.0/24"
+  # çıktıyı: iki ayrı satır yapar
+  local raw="$*"
+  printf '%s\n' "$raw" | tr ',;' '\n' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g;/^$/d'
+}
 # ===================== UI Shell Güvencesi (termproxy SUID) =====================
 module_name="EnsureTermproxySuid"
 module_description="🧰 Ensure proxmox-termproxy has setuid root and /dev/pts is mounted"

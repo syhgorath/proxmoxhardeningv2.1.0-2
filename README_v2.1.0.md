@@ -1,3 +1,5 @@
+Do Not Use This Repo
+this repo is old use https://github.com/syhgorath/sshpocket instead.
 # Proxmox Hardening Script v2.1.0
 
 **Build Date:** 2025-08-08T13:59:21
